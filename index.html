@@ -17,17 +17,19 @@
   --f-display:"Gothic A1","IBM Plex Sans KR",system-ui,sans-serif;
   --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
   --r:10px;
+  --cat-big:#e7effd; --cat-pub:#e3f5ea; --cat-fin:#fff3d6; --cat-sme:#fde8ee; --cat-gov:#eee7fb;
+  --cat-big-ink:#3a68c9; --cat-pub-ink:#2f9461; --cat-fin-ink:#b8860b; --cat-sme-ink:#c4577a; --cat-gov-ink:#7a5cc4;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#12151c; --surface:#1a1f29; --surface-2:#222836; --line:#2f3646;
   --fg:#e8ebf2; --muted:#9aa3b5; --accent:#7ea2ff; --accent-ink:#0d1220; --accent-soft:#25304a;
   --t-insung:#4cc893; --t-jikmu:#6f9bff; --t-pt:#f09a57; --t-toron:#b58cf0; --t-etc:#9aa3b5;
-  --mark:#6b5a12; --danger:#ff7b7b; color-scheme:dark}}
+  --mark:#6b5a12; --danger:#ff7b7b; --cat-big:#1e2a42; --cat-pub:#173229; --cat-fin:#352d18; --cat-sme:#3a1f29; --cat-gov:#2a2340; --cat-big-ink:#8fb0f5; --cat-pub-ink:#74cf9f; --cat-fin-ink:#e2bd5c; --cat-sme-ink:#ee93b0; --cat-gov-ink:#b9a1f0; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#12151c; --surface:#1a1f29; --surface-2:#222836; --line:#2f3646;
   --fg:#e8ebf2; --muted:#9aa3b5; --accent:#7ea2ff; --accent-ink:#0d1220; --accent-soft:#25304a;
   --t-insung:#4cc893; --t-jikmu:#6f9bff; --t-pt:#f09a57; --t-toron:#b58cf0; --t-etc:#9aa3b5;
-  --mark:#6b5a12; --danger:#ff7b7b; color-scheme:dark}
+  --mark:#6b5a12; --danger:#ff7b7b; --cat-big:#1e2a42; --cat-pub:#173229; --cat-fin:#352d18; --cat-sme:#3a1f29; --cat-gov:#2a2340; --cat-big-ink:#8fb0f5; --cat-pub-ink:#74cf9f; --cat-fin-ink:#e2bd5c; --cat-sme-ink:#ee93b0; --cat-gov-ink:#b9a1f0; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.55;margin:0}
@@ -68,7 +70,18 @@ header.top{background:var(--surface);border-bottom:1px solid var(--line);positio
 main.layout{display:grid;grid-template-columns:260px minmax(0,1fr);gap:20px;padding-block:20px 110px}
 aside.companies{position:sticky;top:180px;align-self:start;max-height:calc(100vh - 200px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
 .co-head{display:flex;justify-content:space-between;align-items:baseline;padding:12px 14px 8px;font-size:12.5px;color:var(--muted);letter-spacing:.04em;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface)}
-.co-group{padding:8px 14px 2px;font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:.08em}
+.co-sec{background:var(--cc);margin:8px 8px 0;border-radius:8px;padding-bottom:4px}
+.co-sec:last-child{margin-bottom:8px}
+.co-group{padding:8px 10px 2px;font-size:11.5px;font-weight:700;color:var(--ci);letter-spacing:.08em}
+.co-sec .co-item{padding-inline:10px;border-radius:6px}
+.co-sec .co-item:hover{background:color-mix(in srgb,var(--surface) 55%,transparent)}
+.co-sec .co-item[aria-current="true"]{background:var(--surface);box-shadow:inset 3px 0 0 var(--ci)}
+.co-card{background:var(--cc,var(--surface))!important;border-color:color-mix(in srgb,var(--ci,var(--line)) 25%,transparent)!important}
+.co-card:hover{border-color:var(--ci,var(--accent))!important}
+.co-card .cat{color:var(--ci,var(--muted));font-weight:600}
+.co-card .bar{background:color-mix(in srgb,var(--surface) 70%,transparent)}
+.badge.cat-b{background:var(--cc);color:var(--ci)}
+.seg button .cdot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ci);margin-right:5px;vertical-align:1px}
 .co-item{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;text-align:left;border:0;background:transparent;padding:7px 14px;font-size:14.5px}
 .co-item:hover{background:var(--surface-2)}
 .co-item[aria-current="true"]{background:var(--accent-soft);font-weight:600;box-shadow:inset 3px 0 0 var(--accent)}
@@ -228,7 +241,6 @@ mark{background:var(--mark);color:inherit;border-radius:2px;padding:0 1px}
   <div class="sheet-h"><h2 id="adT">기출 등록</h2><button class="btn ghost" data-close>닫기</button></div>
   <div class="tabs" role="tablist" id="adTabs">
     <button role="tab" aria-selected="true" data-tab="one">직접 입력</button>
-    <button role="tab" aria-selected="false" data-tab="bulk">구글독 붙여넣기</button>
     <button role="tab" aria-selected="false" data-tab="memo">상황·메모 등록</button>
   </div>
   <form class="sheet-b" id="fOne">
@@ -257,18 +269,6 @@ mark{background:var(--mark);color:inherit;border-radius:2px;padding:0 1px}
     <label class="field"><span>상황·내용</span><textarea id="meBody" style="min-height:240px" placeholder="[상황]&#10;당신은 ○○팀 신입사원이다...&#10;&#10;[과제]&#10;1. ...&#10;2. ...&#10;&#10;[진행 방식]&#10;조별 6명, 준비 10분 + 토의 30분"></textarea></label>
     <div class="actions"><button class="btn primary" type="submit" id="meSubmit">등록</button></div>
   </form>
-  <div class="sheet-b" id="fBulk" hidden>
-    <p class="hint">구글독 내용을 그대로 복사해 붙여넣으세요. <code>[한국가스공사 PT면접]</code> 같은 대괄호 제목 줄 아래의 줄들이 각각 하나의 질문으로 등록됩니다. 직무를 나누려면 괄호로 적으세요: <code>[한국가스공사 직무면접(기계)]</code>. 인성·직무·PT·토론이 아닌 제목(예: <code>[한국가스공사 영어면접]</code>)은 <b>기타</b>로 들어가고 '영어면접'이 세부유형이 됩니다.</p>
-    <div class="grid2">
-      <label class="field"><span>기업 구분 (일괄 적용)</span><select id="bCat"></select></label>
-      <label class="field"><span>기업명 (제목에 없을 때)</span><input id="bCo" list="coNames" placeholder="탭 하나를 통째로 붙일 때"></label>
-      <label class="field"><span>연도 (선택)</span><input id="bYear" inputmode="numeric" placeholder="2026"></label>
-      <label class="field"><span>직무 (제목에 없을 때, 비우면 공통)</span><input id="bJob" list="jobNames" placeholder="예: 기계"></label>
-    </div>
-    <label class="field"><span>붙여넣기</span><textarea id="bText" style="min-height:200px" placeholder="[한국가스공사 PT면접]&#10;한국의 에너지 의존도 및 해결방안&#10;...&#10;&#10;[한국가스공사 인성면접]&#10;살면서 가장 성취감 있었던 경험은 무엇인가?"></textarea></label>
-    <div class="actions"><button class="btn" id="bPrev">미리보기</button><button class="btn primary" id="bSave" disabled>등록</button></div>
-    <div id="bOut"></div>
-  </div>
 </div></div>
 
 <!-- 기업 정보 수정 -->
@@ -307,7 +307,9 @@ const FIREBASE_CONFIG = {
 const ADMIN_EMAILS = ["gritbangjihye@gmail.com"];
 const DEMO = !FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey.startsWith("YOUR");
 
-const CATS = ["대기업","공기업","금융권","중견·중소"];
+const CATS = ["대기업","공기업","금융권","공무원","중견·중소"];
+const CAT_KEY={"대기업":"big","공기업":"pub","금융권":"fin","공무원":"gov","중견·중소":"sme"};
+const catVars=c=>{const k=CAT_KEY[c]||"big";return `--cc:var(--cat-${k});--ci:var(--cat-${k}-ink)`};
 const TYPES = [
   {k:"인성",c:"--t-insung"},{k:"직무",c:"--t-jikmu"},{k:"PT",c:"--t-pt"},{k:"토론",c:"--t-toron"},{k:"기타",c:"--t-etc"}
 ];
@@ -416,7 +418,7 @@ function companies(list){
 /* ================= 렌더 ================= */
 function renderFilters(){
   const base=S.items.filter(it=>byCat(it)&&matchQ(it)&&(!S.company||it.company===S.company));
-  $("#cats").innerHTML=["전체",...CATS].map(c=>`<button aria-pressed="${S.cat===c}" data-cat="${c}">${c}</button>`).join("");
+  $("#cats").innerHTML=["전체",...CATS].map(c=>`<button aria-pressed="${S.cat===c}" data-cat="${c}" ${c!=="전체"?`style="${catVars(c)}"`:""}>${c!=="전체"?`<span class="cdot"></span>`:""}${c}</button>`).join("");
   $("#types").innerHTML=[{k:"전체",c:"--accent"},...TYPES].map(t=>{
     const n=t.k==="전체"?base.length:base.filter(x=>x.type===t.k).length;
     return `<button class="tchip" style="--c:var(${t.c})" aria-pressed="${S.type===t.k}" data-type="${t.k}"><span class="dot"></span>${t.k}<span class="n">${n}</span></button>`}).join("");
@@ -428,7 +430,7 @@ function renderCompanyList(){
   const cats=S.cat==="전체"?CATS:[S.cat];
   cats.forEach(c=>{
     const g=list.filter(x=>x.cat===c); if(!g.length) return;
-    html+=`<div class="co-group">${c}</div>`+g.map(x=>`<button class="co-item" data-co="${esc(x.name)}" aria-current="${S.company===x.name}"><span>${esc(x.name)}</span><span class="n">${x.items.length}</span></button>`).join("");
+    html+=`<div class="co-sec" style="${catVars(c)}"><div class="co-group">${c}</div>`+g.map(x=>`<button class="co-item" data-co="${esc(x.name)}" aria-current="${S.company===x.name}"><span>${esc(x.name)}</span><span class="n">${x.items.length}</span></button>`).join("")+`</div>`;
   });
   $("#coList").innerHTML=html;
   $("#coSelect").innerHTML=`<option value="">전체 기업 (${list.length}곳)</option>`+list.map(x=>`<option value="${esc(x.name)}" ${S.company===x.name?"selected":""}>[${x.cat}] ${esc(x.name)} · ${x.items.length}</option>`).join("");
@@ -453,7 +455,7 @@ function renderView(){
     const jcount=j=>j==="전체"?coAll.length:j==="공통"?coAll.filter(x=>!x.job).length:coAll.filter(x=>x.job===j).length;
     const jobBar=jobs.length?`<div class="jobs"><span>직무</span>${["전체","공통",...jobs].map(j=>`<button class="jchip" data-job="${esc(j)}" aria-pressed="${(S.job||"전체")===j}">${esc(j)}<span class="n">${jcount(j)}</span></button>`).join("")}${S.job&&S.job!=="공통"?`<span style="margin-left:6px">· 공통 질문 포함</span>`:""}</div>`:"";
     const types=S.type==="전체"?TYPES:TYPES.filter(t=>t.k===S.type);
-    v.innerHTML=`<div class="view-head"><h1>${esc(S.company)} <span class="badge">${esc(meta?meta.cat:"")}</span></h1>
+    v.innerHTML=`<div class="view-head"><h1>${esc(S.company)} <span class="badge cat-b" style="${catVars(meta?meta.cat:"")}">${esc(meta?meta.cat:"")}</span></h1>
       <span class="sum">${TYPES.map(t=>`${t.k} ${all.filter(x=>x.type===t.k).length}`).join(" · ")}</span>
       ${S.admin?`<button class="btn" id="coEdit">기업 정보 수정</button>`:""}
       <button class="btn" id="coAllSel">이 기업 전체 선택</button></div>${jobBar}
@@ -471,7 +473,7 @@ function renderView(){
     v.innerHTML=`<div class="view-head"><h1>${S.cat==="전체"?"전체 기업":S.cat}</h1><span class="sum">${cos.length}개 기업 · 기출 ${list.length}개</span></div>`+
       (cos.length?`<div class="co-grid">${cos.map(c=>{
         const n=c.items.length;
-        return `<button class="co-card" data-co="${esc(c.name)}"><div><div class="nm">${esc(c.name)}</div><div class="cat">${c.cat} · 기출 ${n}개</div></div>
+        return `<button class="co-card" data-co="${esc(c.name)}" style="${catVars(c.cat)}"><div><div class="nm">${esc(c.name)}</div><div class="cat">${c.cat} · 기출 ${n}개</div></div>
           <div class="bar">${TYPES.map(t=>{const k=c.items.filter(x=>x.type===t.k).length;return k?`<span style="width:${k/n*100}%;background:var(${t.c})"></span>`:""}).join("")}</div>
           <div class="mini">${TYPES.map(t=>{const k=c.items.filter(x=>x.type===t.k).length;return k?`<span><i style="background:var(${t.c})"></i>${t.k} ${k}</span>`:""}).join("")}</div></button>`}).join("")}</div>`
       :`<div class="empty">아직 등록된 기출이 없습니다.${S.admin?" 상단의 <b>기출 등록</b>에서 구글독 내용을 붙여넣어 시작하세요.":""}</div>`);
@@ -479,7 +481,7 @@ function renderView(){
   }
   const cos=companies(list);
   v.innerHTML=`<div class="view-head"><h1>검색 결과</h1><span class="sum">${cos.length}개 기업 · ${list.length}개 질문</span>${list.length?`<button class="btn" id="resAllSel">결과 전체 선택</button>`:""}</div>`+
-    (cos.length?cos.map(c=>`<div class="group"><div class="group-h"><button class="link" data-co="${esc(c.name)}">${esc(c.name)}</button><span class="badge">${c.cat}</span>
+    (cos.length?cos.map(c=>`<div class="group"><div class="group-h"><button class="link" data-co="${esc(c.name)}">${esc(c.name)}</button><span class="badge cat-b" style="${catVars(c.cat)}">${c.cat}</span>
       ${TYPES.map(t=>{const k=c.items.filter(x=>x.type===t.k).length;return k?`<span class="tag" style="--c:var(${t.c})">${t.k} ${k}</span>`:""}).join("")}</div>
       <ol style="list-style:none;margin:0;padding:0">${c.items.sort((a,b)=>TYPES.findIndex(t=>t.k===a.type)-TYPES.findIndex(t=>t.k===b.type)).map(it=>qRow(it).replace('<div class="body">',`<div class="body"><span class="tag" style="--c:${typeColor(it.type)};margin-right:6px">${it.type}</span>`)).join("")}</ol></div>`).join("")
     :`<div class="empty">'${esc(S.q)}'에 해당하는 기출이 없습니다. 다른 키워드로 검색해 보세요.</div>`);
@@ -539,17 +541,16 @@ function onAuth(u){S.user=u;S.admin=!!u&&(DEMO||ADMIN_EMAILS.includes(u.email));
 
 /* 등록 모달 */
 const opt=(arr,v)=>arr.map(x=>`<option ${x===v?"selected":""}>${x}</option>`).join("");
-function setTab(t){$("#adTabs").querySelectorAll("button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));$("#fOne").hidden=t!=="one";$("#fBulk").hidden=t!=="bulk";$("#fMemo").hidden=t!=="memo"}
+function setTab(t){$("#adTabs").querySelectorAll("button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));$("#fOne").hidden=t!=="one";$("#fMemo").hidden=t!=="memo"}
 $("#adTabs").onclick=e=>{const b=e.target.closest("[data-tab]");if(b)setTab(b.dataset.tab)};
 $("#btnAdmin").onclick=()=>{
   S.editing=null;$("#adT").textContent="기출 등록";$("#adTabs").hidden=false;setTab("one");
   const cur=S.items.find(x=>x.company===S.company);
-  $("#oCat").innerHTML=opt(CATS,cur?cur.cat:(S.cat!=="전체"?S.cat:"공기업"));$("#bCat").innerHTML=$("#oCat").innerHTML;
+  $("#oCat").innerHTML=opt(CATS,cur?cur.cat:(S.cat!=="전체"?S.cat:"공기업"));
   $("#oType").innerHTML=opt(TYPES.map(t=>t.k),S.type!=="전체"?S.type:"인성");
   $("#oCo").value=S.company||"";$("#oSub").value="";$("#oYear").value="";$("#oJob").value=S.job&&S.job!=="공통"?S.job:"";$("#oQ").value="";
   $("#oQLabel").textContent="질문 (한 줄에 하나씩, 여러 줄이면 여러 개 등록)";$("#oSubmit").textContent="등록";
-  $("#bOut").innerHTML="";$("#bSave").disabled=true;
-  $("#meCat").innerHTML=$("#oCat").innerHTML;$("#meType").innerHTML=opt(TYPES.map(t=>t.k),"기타");
+    $("#meCat").innerHTML=$("#oCat").innerHTML;$("#meType").innerHTML=opt(TYPES.map(t=>t.k),"기타");
   $("#meCo").value=S.company||"";$("#meSub").value="";$("#meJob").value=S.job&&S.job!=="공통"?S.job:"";$("#meYear").value="";$("#meTitle").value="";$("#meBody").value="";$("#meSubmit").textContent="등록";
   open("#mAdmin");
 };
@@ -578,7 +579,7 @@ $("#fOne").addEventListener("submit",async e=>{e.preventDefault();
   const base={cat:$("#oCat").value,company:$("#oCo").value.trim(),type:$("#oType").value,subType:$("#oSub").value.trim(),year:$("#oYear").value.trim(),job:$("#oJob").value.trim()};
   if(!base.company)return toast("기업명을 입력하세요");
   try{
-    if(S.editing){await store.update(S.editing,{...base,question:$("#oQ").value.trim()});toast("저장했습니다");$("#mAdmin").hidden=true;return}
+    if(S.editing){await store.update(S.editing,{...base,question:cleanLine($("#oQ").value)});toast("저장했습니다");$("#mAdmin").hidden=true;return}
     const qs=$("#oQ").value.split("\n").map(cleanLine).filter(Boolean);
     const exist=new Set(S.items.map(keyOf));
     const fresh=qs.map(q=>({...base,question:q})).filter(x=>!exist.has(keyOf(x)));
@@ -590,7 +591,8 @@ $("#fOne").addEventListener("submit",async e=>{e.preventDefault();
 
 /* 구글독 붙여넣기 파서 */
 const TYPE_MAP=[[/^(pt|발표|프레젠테이션)/i,"PT"],[/^(토론|토의|집단토론|그룹토의)/,"토론"],[/^(인성|임원|경영진|최종)/,"인성"],[/^(직무|실무|기술|전공)/,"직무"]];
-function cleanLine(s){return s.replace(/^\s*(\d+\s*[.)]|Q\s*\d*\s*[.:)]|[-•·▶▷○●■□*–]\s*)\s*/i,"").trim()}
+const NUM_RE=/^\s*(?:[(\[（]\s*\d{1,3}\s*[)\]）]|[①-⑳❶-❿➀-➉]|\d{1,3}\s*번\s*[.)．:]?|\d{1,3}\s*[.)．、:：]|\d{1,3}\s+[-–—]\s|\d{1,3}\s+(?=[가-힣A-Za-z])(?![가-힣]*\s*(?:년|월|일|개|명|분|초|세|살|시간|%|점|억|만|위|차|회|대)\b)|Q\s*\d*\s*[.:)．]|문\s*\d+\s*[.)．:]?|[-•·▶▷○●■□*–]\s*)\s*/i;
+function cleanLine(s){let t=String(s),p;do{p=t;t=t.replace(NUM_RE,"")}while(t!==p&&t);return t.trim()}
 function keyOf(x){return x.company+"|"+x.type+"|"+(x.job||"")+"|"+norm(x.question)}
 function parseHeader(inner,fallbackCo,fallbackJob){
   let s=inner.replace(/\s+/g," ").trim().replace(/\s*기출$/,""),job="";
@@ -618,24 +620,6 @@ function parseDoc(text,d){
   });
   return out;
 }
-$("#bPrev").onclick=()=>{
-  const rows=parseDoc($("#bText").value,{cat:$("#bCat").value,company:$("#bCo").value.trim(),year:$("#bYear").value.trim(),job:$("#bJob").value.trim()});
-  const exist=new Set(S.items.map(keyOf)),seen=new Set();
-  rows.forEach(r=>{const k=keyOf(r);r._dup=exist.has(k)||seen.has(k);seen.add(k)});
-  S.bulk=rows;const ok=rows.filter(r=>!r._dup&&r.company);
-  const noCo=rows.filter(r=>!r.company).length;
-  $("#bOut").innerHTML=rows.length?`<p class="hint">총 ${rows.length}개 · <b>신규 ${ok.length}개</b> · 중복 ${rows.filter(r=>r._dup).length}개 제외${noCo?` · <b style="color:var(--danger)">기업명 없음 ${noCo}개</b> (위 '기업명' 칸을 채우세요)`:""}</p>
-    <div class="prev"><table><thead><tr><th>기업</th><th>유형</th><th>직무</th><th>세부</th><th>질문</th></tr></thead><tbody>${rows.map(r=>`<tr class="${r._dup?"dup":""}"><td>${esc(r.company)||"<b style='color:var(--danger)'>?</b>"}</td><td><span class="tag" style="--c:${typeColor(r.type)}">${r.type}</span></td><td>${esc(r.job)||"공통"}</td><td>${esc(r.subType)}</td><td>${esc(r.question)}</td></tr>`).join("")}</tbody></table></div>`
-    :`<p class="hint">붙여넣은 내용에서 질문을 찾지 못했습니다.</p>`;
-  $("#bSave").disabled=!ok.length;
-};
-$("#bSave").onclick=async()=>{
-  const ok=S.bulk.filter(r=>!r._dup&&r.company).map(({_dup,...r})=>r);
-  $("#bSave").disabled=true;
-  try{await store.addMany(ok);toast(`${ok.length}개 등록했습니다`);$("#bText").value="";$("#bOut").innerHTML="";S.bulk=[]}
-  catch(err){toast("등록 실패: "+err.message);$("#bSave").disabled=false}
-};
-
 /* 기업 정보 수정 */
 function openCoEdit(){const it=S.items.find(x=>x.company===S.company);$("#cName").value=S.company;$("#cCat").innerHTML=opt(CATS,it?it.cat:"공기업");
   const jobs=[...new Set(S.items.filter(x=>x.company===S.company&&x.job).map(x=>x.job))].sort(ko);

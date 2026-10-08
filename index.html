@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>기업별 면접 기출</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Gothic+A1:wght@800;900&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<style>
+/* 레이아웃: 상단 검색바 + 좌측 기업목록 + 우측 한눈에 보기 보드(유형별 5열) */
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --surface-2:#eef0f4; --line:#dde1e8;
+  --fg:#1b2130; --muted:#5f6878; --accent:#1f4fbf; --accent-ink:#ffffff; --accent-soft:#e3eafb;
+  --t-insung:#1d8a5b; --t-jikmu:#2860c9; --t-pt:#c8641c; --t-toron:#7b47b8; --t-etc:#6b7280;
+  --mark:#ffe58a; --danger:#c53030;
+  --f-display:"Gothic A1","IBM Plex Sans KR",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --r:10px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12151c; --surface:#1a1f29; --surface-2:#222836; --line:#2f3646;
+  --fg:#e8ebf2; --muted:#9aa3b5; --accent:#7ea2ff; --accent-ink:#0d1220; --accent-soft:#25304a;
+  --t-insung:#4cc893; --t-jikmu:#6f9bff; --t-pt:#f09a57; --t-toron:#b58cf0; --t-etc:#9aa3b5;
+  --mark:#6b5a12; --danger:#ff7b7b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12151c; --surface:#1a1f29; --surface-2:#222836; --line:#2f3646;
+  --fg:#e8ebf2; --muted:#9aa3b5; --accent:#7ea2ff; --accent-ink:#0d1220; --accent-soft:#25304a;
+  --t-insung:#4cc893; --t-jikmu:#6f9bff; --t-pt:#f09a57; --t-toron:#b58cf0; --t-etc:#9aa3b5;
+  --mark:#6b5a12; --danger:#ff7b7b; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.55;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1360px;margin:0 auto;padding-inline:16px}
+
+/* 헤더 */
+header.top{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.top-row{display:flex;align-items:center;gap:12px;padding-block:12px;flex-wrap:wrap}
+.brand{display:flex;flex-direction:column;line-height:1.15;margin-right:auto}
+.brand b{font-family:var(--f-display);font-weight:900;font-size:21px;letter-spacing:-.02em}
+.brand small{color:var(--muted);font-size:11.5px;letter-spacing:.06em}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 12px;font-size:14px;font-weight:500;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.danger{color:var(--danger)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.search{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding-bottom:12px}
+.search-box{flex:1 1 320px;position:relative;min-width:0}
+.search-box input{width:100%;border:1.5px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 14px 10px 38px;font-size:15.5px}
+.search-box input:focus{border-color:var(--accent);outline:none;background:var(--surface)}
+.search-box svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.seg{display:inline-flex;background:var(--surface-2);border-radius:10px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:6px 12px;border-radius:8px;font-size:14px;font-weight:500;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.types{display:flex;gap:6px;flex-wrap:wrap;padding-bottom:12px}
+.tchip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px 4px 10px;font-size:13.5px;display:inline-flex;align-items:center;gap:6px}
+.tchip .dot{width:8px;height:8px;border-radius:50%;background:var(--c,var(--muted))}
+.tchip .n{color:var(--muted);font-variant-numeric:tabular-nums;font-size:12.5px}
+.tchip[aria-pressed="true"]{border-color:var(--c,var(--accent));background:var(--accent-soft);font-weight:600}
+.demo-note{background:var(--accent-soft);color:var(--fg);font-size:13px;padding:7px 0}
+
+/* 본문 */
+main.layout{display:grid;grid-template-columns:260px minmax(0,1fr);gap:20px;padding-block:20px 110px}
+aside.companies{position:sticky;top:180px;align-self:start;max-height:calc(100vh - 200px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.co-head{display:flex;justify-content:space-between;align-items:baseline;padding:12px 14px 8px;font-size:12.5px;color:var(--muted);letter-spacing:.04em;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface)}
+.co-group{padding:8px 14px 2px;font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:.08em}
+.co-item{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;text-align:left;border:0;background:transparent;padding:7px 14px;font-size:14.5px}
+.co-item:hover{background:var(--surface-2)}
+.co-item[aria-current="true"]{background:var(--accent-soft);font-weight:600;box-shadow:inset 3px 0 0 var(--accent)}
+.co-item .n{color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums}
+.co-select{display:none}
+section.view{min-width:0}
+.view-head{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.view-head h1{font-family:var(--f-display);font-weight:900;font-size:26px;letter-spacing:-.02em;margin:0;text-wrap:balance}
+.badge{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px;background:var(--surface-2);color:var(--muted);vertical-align:middle}
+.jobs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:-4px 0 14px}
+.jobs>span{font-size:12.5px;color:var(--muted);margin-right:2px}
+.jchip{border:1px solid var(--line);background:var(--surface);border-radius:7px;padding:3px 10px;font-size:13.5px}
+.jchip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg);font-weight:600}
+.jchip .n{opacity:.6;font-size:12px;margin-left:4px;font-variant-numeric:tabular-nums}
+.sub-h{padding:6px 12px;font-size:12px;font-weight:700;color:var(--c);background:var(--surface-2);border-top:1px solid var(--line);letter-spacing:.03em}
+.view-head .sum{color:var(--muted);font-size:13.5px;margin-right:auto}
+.empty{border:1.5px dashed var(--line);border-radius:var(--r);padding:36px 20px;text-align:center;color:var(--muted)}
+
+/* 기업 개요 카드 */
+.co-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.co-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;text-align:left;display:flex;flex-direction:column;gap:10px}
+.co-card:hover{border-color:var(--accent)}
+.co-card .nm{font-weight:700;font-size:16px}
+.co-card .cat{font-size:12px;color:var(--muted)}
+.bar{display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--surface-2)}
+.bar span{display:block;height:100%}
+.mini{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.mini i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;vertical-align:1px}
+
+/* 보드 */
+.board{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;align-items:start}
+.col{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;min-width:0}
+.col-h{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line);border-top:4px solid var(--c)}
+.col-h b{font-size:15.5px}
+.col-h .n{color:var(--muted);font-size:13px;margin-right:auto;font-variant-numeric:tabular-nums}
+.col-h label{font-size:12.5px;color:var(--muted);display:flex;gap:4px;align-items:center;cursor:pointer}
+.col ol{list-style:none;margin:0;padding:0}
+.col .none{padding:16px 12px;color:var(--muted);font-size:13.5px}
+.q{display:flex;gap:10px;padding:9px 12px;border-top:1px solid var(--line);align-items:flex-start}
+.q:first-child{border-top:0}
+.sub-h+.q{border-top:0}
+.q input[type=checkbox]{margin-top:4px;flex:none;width:16px;height:16px;accent-color:var(--accent)}
+.q .body{min-width:0;flex:1}
+.q .txt{word-break:keep-all;overflow-wrap:anywhere}
+.q .meta{display:flex;flex-wrap:wrap;gap:4px 8px;margin-top:3px;font-size:12px;color:var(--muted)}
+.q .meta .st{color:var(--c);font-weight:600}
+.q .adm{display:flex;gap:2px;flex:none}
+.q .adm button{border:0;background:transparent;color:var(--muted);font-size:12.5px;padding:2px 6px;border-radius:5px}
+.q .adm button:hover{background:var(--surface-2);color:var(--fg)}
+.q .adm button.arm{color:#fff;background:var(--danger)}
+.q.sel{background:var(--accent-soft)}
+mark{background:var(--mark);color:inherit;border-radius:2px;padding:0 1px}
+
+/* 검색 결과 리스트 */
+.group{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);margin-bottom:12px;overflow:hidden}
+.group-h{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.group-h button.link{border:0;background:none;font-weight:700;font-size:16px;padding:0;color:var(--fg)}
+.group-h button.link:hover{color:var(--accent);text-decoration:underline}
+.tag{font-size:11.5px;font-weight:600;padding:1px 7px;border-radius:5px;color:var(--c);border:1px solid var(--c);white-space:nowrap}
+
+/* 하단 선택바 */
+.selbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--fg);color:var(--bg);padding-bottom:env(safe-area-inset-bottom,0px);transform:translateY(110%);transition:transform .2s}
+.selbar.on{transform:none}
+.selbar .wrap{display:flex;align-items:center;gap:10px;padding-block:12px;flex-wrap:wrap}
+.selbar b{font-variant-numeric:tabular-nums;margin-right:auto}
+.selbar .btn{background:transparent;color:var(--bg);border-color:color-mix(in srgb,var(--bg) 35%,transparent)}
+.selbar .btn.primary{background:var(--bg);color:var(--fg);border-color:var(--bg)}
+
+/* 모달 */
+.modal{position:fixed;inset:0;z-index:50;background:rgba(10,14,22,.5);display:flex;align-items:flex-start;justify-content:center;padding:5vh 16px;overflow:auto}
+.sheet{background:var(--surface);border-radius:14px;width:100%;max-width:820px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+.sheet.sm{max-width:400px}
+.sheet-h{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line)}
+.sheet-h h2{margin:0;font-size:18px}
+.sheet-b{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);padding:0 20px}
+.tabs button{border:0;background:none;padding:10px 12px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button[aria-selected="true"]{color:var(--accent);border-color:var(--accent)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field>span{font-size:13px;font-weight:600;color:var(--muted)}
+.field input,.field select,.field textarea{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:8px 10px;width:100%}
+.field textarea{min-height:150px;resize:vertical;line-height:1.6}
+.hint{font-size:12.5px;color:var(--muted);margin:0}
+.hint code{background:var(--surface-2);padding:1px 5px;border-radius:4px;font-size:12px}
+.prev{max-height:320px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.prev table{width:100%;border-collapse:collapse;font-size:13px}
+.prev th,.prev td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.prev th{position:sticky;top:0;background:var(--surface-2);font-weight:600}
+.prev tr.dup td{color:var(--muted);text-decoration:line-through}
+.actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:10px;z-index:60;font-size:14px;max-width:calc(100% - 32px)}
+
+@media (max-width:860px){
+  main.layout{grid-template-columns:minmax(0,1fr)}
+  aside.companies{display:none}
+  .co-select{display:block;margin-bottom:12px}
+  .co-select select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+  .view-head h1{font-size:22px}
+}
+@media (prefers-reduced-motion:reduce){.selbar{transition:none}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div id="demoNote" class="demo-note" hidden><div class="wrap">데모 모드입니다. 예시 데이터는 이 브라우저에만 저장됩니다. Firebase 설정을 넣으면 실제 DB로 연결됩니다.</div></div>
+  <div class="wrap">
+    <div class="top-row">
+      <div class="brand"><b>기업별 면접 기출</b><small>GRITMINDLAB · 인성 · 직무 · PT · 토론</small></div>
+      <button class="btn" id="btnAll" title="현재 검색 결과 전체를 엑셀로">결과 전체 엑셀</button>
+      <button class="btn" id="btnAdmin" hidden>기출 등록</button>
+      <button class="btn ghost" id="btnLogin">관리자 로그인</button>
+    </div>
+    <div class="search">
+      <label class="search-box">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="기업명 또는 질문 키워드 검색 (예: 갈등, 윤리, 한국가스공사)" autocomplete="off">
+      </label>
+      <div class="seg" id="cats" role="group" aria-label="기업 구분"></div>
+    </div>
+    <div class="types" id="types" role="group" aria-label="면접 유형"></div>
+  </div>
+</header>
+
+<main class="wrap layout">
+  <aside class="companies" id="coList" aria-label="기업 목록"></aside>
+  <section class="view">
+    <div class="co-select"><select id="coSelect" aria-label="기업 선택"></select></div>
+    <div id="view"></div>
+  </section>
+</main>
+
+<div class="selbar" id="selbar"><div class="wrap">
+  <b id="selCount">0개 선택</b>
+  <button class="btn" id="selClear">선택 해제</button>
+  <button class="btn primary" id="selDown">스크립트 연습 엑셀 다운로드</button>
+</div></div>
+
+<!-- 로그인 -->
+<div class="modal" id="mLogin" hidden><div class="sheet sm" role="dialog" aria-labelledby="lgT">
+  <div class="sheet-h"><h2 id="lgT">관리자 로그인</h2><button class="btn ghost" data-close>닫기</button></div>
+  <form class="sheet-b" id="fLogin">
+    <label class="field"><span>이메일</span><input id="lgEmail" type="email" required></label>
+    <label class="field"><span>비밀번호</span><input id="lgPw" type="password" required></label>
+    <p class="hint" id="lgMsg"></p>
+    <div class="actions"><button class="btn primary" type="submit">로그인</button></div>
+  </form>
+</div></div>
+
+<!-- 등록/수정 -->
+<div class="modal" id="mAdmin" hidden><div class="sheet" role="dialog" aria-labelledby="adT">
+  <div class="sheet-h"><h2 id="adT">기출 등록</h2><button class="btn ghost" data-close>닫기</button></div>
+  <div class="tabs" role="tablist" id="adTabs">
+    <button role="tab" aria-selected="true" data-tab="one">직접 입력</button>
+    <button role="tab" aria-selected="false" data-tab="bulk">구글독 붙여넣기</button>
+  </div>
+  <form class="sheet-b" id="fOne">
+    <div class="grid2">
+      <label class="field"><span>기업 구분</span><select id="oCat"></select></label>
+      <label class="field"><span>기업명</span><input id="oCo" list="coNames" required placeholder="예: 한국가스공사"></label>
+      <label class="field"><span>면접 유형</span><select id="oType"></select></label>
+      <label class="field"><span>세부유형 (선택)</span><input id="oSub" placeholder="기타일 때: 영어면접, AI면접 등"></label>
+      <label class="field"><span>연도 (선택)</span><input id="oYear" inputmode="numeric" placeholder="2026"></label>
+      <label class="field"><span>직무·직렬 (비우면 공통)</span><input id="oJob" list="jobNames" placeholder="예: 사무, 기계, 전기"></label>
+    </div>
+    <label class="field"><span id="oQLabel">질문 (한 줄에 하나씩, 여러 줄이면 여러 개 등록)</span><textarea id="oQ" required></textarea></label>
+    <div class="actions"><button class="btn primary" type="submit" id="oSubmit">등록</button></div>
+  </form>
+  <div class="sheet-b" id="fBulk" hidden>
+    <p class="hint">구글독 내용을 그대로 복사해 붙여넣으세요. <code>[한국가스공사 PT면접]</code> 같은 대괄호 제목 줄 아래의 줄들이 각각 하나의 질문으로 등록됩니다. 직무를 나누려면 괄호로 적으세요: <code>[한국가스공사 직무면접(기계)]</code>. 인성·직무·PT·토론이 아닌 제목(예: <code>[한국가스공사 영어면접]</code>)은 <b>기타</b>로 들어가고 '영어면접'이 세부유형이 됩니다.</p>
+    <div class="grid2">
+      <label class="field"><span>기업 구분 (일괄 적용)</span><select id="bCat"></select></label>
+      <label class="field"><span>기업명 (제목에 없을 때)</span><input id="bCo" list="coNames" placeholder="탭 하나를 통째로 붙일 때"></label>
+      <label class="field"><span>연도 (선택)</span><input id="bYear" inputmode="numeric" placeholder="2026"></label>
+      <label class="field"><span>직무 (제목에 없을 때, 비우면 공통)</span><input id="bJob" list="jobNames" placeholder="예: 기계"></label>
+    </div>
+    <label class="field"><span>붙여넣기</span><textarea id="bText" style="min-height:200px" placeholder="[한국가스공사 PT면접]&#10;한국의 에너지 의존도 및 해결방안&#10;...&#10;&#10;[한국가스공사 인성면접]&#10;살면서 가장 성취감 있었던 경험은 무엇인가?"></textarea></label>
+    <div class="actions"><button class="btn" id="bPrev">미리보기</button><button class="btn primary" id="bSave" disabled>등록</button></div>
+    <div id="bOut"></div>
+  </div>
+</div></div>
+
+<!-- 기업 정보 수정 -->
+<div class="modal" id="mCo" hidden><div class="sheet sm" role="dialog" aria-labelledby="coT">
+  <div class="sheet-h"><h2 id="coT">기업 정보 수정</h2><button class="btn ghost" data-close>닫기</button></div>
+  <form class="sheet-b" id="fCo">
+    <label class="field"><span>기업명</span><input id="cName" required></label>
+    <label class="field"><span>기업 구분</span><select id="cCat"></select></label>
+    <p class="hint">이 기업의 모든 기출에 한꺼번에 반영됩니다.</p>
+    <div class="actions"><button class="btn primary" type="submit">저장</button></div>
+  </form>
+</div></div>
+
+<datalist id="coNames"></datalist><datalist id="jobNames"></datalist>
+
+<script>
+/* ================= 설정 ================= */
+// Firebase 콘솔 > 프로젝트 설정 > 내 앱(웹) 의 firebaseConfig 값을 붙여넣으세요.
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBL0by3UgYiBBdie5UE4jPM6ZiHRY0NX8Y",
+  authDomain: "interview-bank-f08be.firebaseapp.com",
+  projectId: "interview-bank-f08be",
+  storageBucket: "interview-bank-f08be.firebasestorage.app",
+  messagingSenderId: "40116078049",
+  appId: "1:40116078049:web:d879870ed513f2f267fea0"
+};
+// 기출을 등록·수정·삭제할 수 있는 관리자 이메일 (firestore.rules 와 똑같이 맞춰주세요)
+const ADMIN_EMAILS = ["gritbangjihye@gmail.com"];
+const DEMO = !FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey.startsWith("YOUR");
+
+const CATS = ["대기업","공기업","중견·중소"];
+const TYPES = [
+  {k:"인성",c:"--t-insung"},{k:"직무",c:"--t-jikmu"},{k:"PT",c:"--t-pt"},{k:"토론",c:"--t-toron"},{k:"기타",c:"--t-etc"}
+];
+const typeColor = t => `var(${(TYPES.find(x=>x.k===t)||TYPES[4]).c})`;
+
+/* ================= 상태 ================= */
+const S = { items:[], cat:"전체", type:"전체", q:"", company:null, job:null, sel:new Set(), admin:false, editing:null, bulk:[] };
+let store;
+
+/* ================= 저장소: 데모(localStorage) ================= */
+function demoStore(){
+  const KEY="ivbank_demo_v2";
+  const seed=()=>{
+    const out=[];let i=0;
+    const add=(cat,company,type,qs,extra={})=>qs.forEach(q=>out.push({id:"d"+(++i),cat,company,type,question:q,subType:"",year:"",job:"",...extra}));
+    add("공기업","한국가스공사","PT",["한국의 에너지 의존도 및 해결방안","당사를 효과적으로 소개할 수 있는 마케팅 방안","저탄소 친환경 에너지와 관련된 사업의 현황과 확대 방안","PTG 사업과 관련하여 당사의 기여 방법","4차 산업과 당사의 업무를 연관시켜 향후 방향성에 대한 제안"]);
+    add("공기업","한국가스공사","인성",["AI가 등장하면서 엔지니어로 필요한 역할은 무엇인가?","살면서 가장 성취감 있었던 경험은 무엇인가?","본인의 단점은 무엇인가?","마지막으로 할말이 있는가?","본인의 장단점은 무엇이라고 생각하는가?","다른 지원자에 비해 본인이 가지고 있는 특출한 역량은 어떠한 것인가?","우리 기관의 인재상에 본인이 왜 적합하다고 생각하는가?","입사 이후에 어떠한 업무를 담당하고 싶은가?","상사가 윤리의식에 벗어난 업무를 지시한다면 어떻게 대처할 것인가?","상사와 친하게 지내는 본인만의 노하우가 있는가?","대화가 잘 통하지 않는 상대와 친해지기 위해 어떻게 하는가?","규칙을 어긴적이 있거나 어기는 사람을 본적이 있는가?","자신의 소통점수는 100점 만점 중 몇 점이라고 생각하는가?","집단에 속하게 된다면 어떠한 역할을 주로 담당하는가?","조직 내에서 발생한 갈등을 해결하기 위해 노력한 적이 있는가?"]);
+    add("공기업","한국가스공사","직무",["(예시) 배관 설비 유지보수 시 가장 중요한 안전 관리 포인트는?"],{job:"기계"});
+    add("공기업","한국가스공사","직무",["(예시) 공공기관 예산 집행 과정에서 주의할 점은?"],{job:"사무"});
+    add("대기업","(예시) 대기업A","인성",["1분 자기소개를 해보세요.","가장 힘들었던 팀 프로젝트 경험은?"]);
+    add("대기업","(예시) 대기업A","직무",["지원 직무에서 가장 중요한 역량은 무엇이라고 생각하나요?"]);
+    add("대기업","(예시) 대기업A","토론",["재택근무 확대, 찬성과 반대 입장에서 토론하시오."]);
+    add("대기업","(예시) 대기업A","기타",["Introduce yourself in English."],{subType:"영어면접"});
+    add("중견·중소","(예시) 중견기업B","인성",["우리 회사를 어떻게 알게 되었나요?","입사 후 5년 뒤 모습은?"]);
+    return out;
+  };
+  let data; try{data=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+  if(!Array.isArray(data)) data=seed();
+  let cb=()=>{}, authCb=()=>{};
+  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){} cb(data.slice())};
+  return {
+    start(onData,onAuth){cb=onData;authCb=onAuth;cb(data.slice());authCb(null)},
+    async addMany(list){list.forEach(x=>data.push({...x,id:"d"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}));save()},
+    async update(id,patch){const it=data.find(x=>x.id===id);if(it)Object.assign(it,patch);save()},
+    async updateMany(ids,patch){ids.forEach(id=>{const it=data.find(x=>x.id===id);if(it)Object.assign(it,patch)});save()},
+    async remove(id){data=data.filter(x=>x.id!==id);save()},
+    async login(email){authCb({email:ADMIN_EMAILS[0]||email})},
+    async logout(){authCb(null)}
+  };
+}
+
+/* ================= 저장소: Firebase ================= */
+async function firebaseStore(){
+  const V="10.12.2", base=`https://www.gstatic.com/firebasejs/${V}/`;
+  const [{initializeApp},fs,au]=await Promise.all([import(base+"firebase-app.js"),import(base+"firebase-firestore.js"),import(base+"firebase-auth.js")]);
+  const app=initializeApp(FIREBASE_CONFIG), db=fs.getFirestore(app), auth=au.getAuth(app);
+  const col=fs.collection(db,"questions");
+  return {
+    start(onData,onAuth){
+      fs.onSnapshot(col,snap=>onData(snap.docs.map(d=>({id:d.id,...d.data()}))),err=>toast("불러오기 실패: "+err.message));
+      au.onAuthStateChanged(auth,u=>onAuth(u));
+    },
+    async addMany(list){
+      for(let i=0;i<list.length;i+=400){
+        const b=fs.writeBatch(db);
+        list.slice(i,i+400).forEach(x=>b.set(fs.doc(col),{...x,createdAt:fs.serverTimestamp()}));
+        await b.commit();
+      }
+    },
+    async update(id,patch){await fs.updateDoc(fs.doc(db,"questions",id),{...patch,updatedAt:fs.serverTimestamp()})},
+    async updateMany(ids,patch){
+      for(let i=0;i<ids.length;i+=400){const b=fs.writeBatch(db);ids.slice(i,i+400).forEach(id=>b.update(fs.doc(db,"questions",id),patch));await b.commit()}
+    },
+    async remove(id){await fs.deleteDoc(fs.doc(db,"questions",id))},
+    async login(email,pw){await au.signInWithEmailAndPassword(auth,email,pw)},
+    async logout(){await au.signOut(auth)}
+  };
+}
+
+/* ================= 유틸 ================= */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm=s=>String(s||"").toLowerCase().replace(/[\s?？.!,·'"“”‘’~\-]/g,"");
+const ko=(a,b)=>a.localeCompare(b,"ko");
+function hl(text){
+  const t=esc(text); const terms=S.q.trim().split(/\s+/).filter(Boolean);
+  if(!terms.length) return t;
+  const re=new RegExp("("+terms.map(x=>esc(x).replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")+")","gi");
+  return t.replace(re,"<mark>$1</mark>");
+}
+let toastT;
+function toast(msg){let el=$(".toast");if(!el){el=document.createElement("div");el.className="toast";el.setAttribute("role","status");document.body.appendChild(el)}el.textContent=msg;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>el.hidden=true,2600)}
+function open(id){$(id).hidden=false}
+function close(el){el.closest(".modal").hidden=true}
+document.addEventListener("click",e=>{if(e.target.matches("[data-close]"))close(e.target);else if(e.target.classList.contains("modal"))e.target.hidden=true});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".modal").forEach(m=>m.hidden=true)});
+
+/* ================= 필터 ================= */
+function matchQ(it){
+  const terms=S.q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if(!terms.length) return true;
+  const hay=(it.company+" "+it.question+" "+(it.subType||"")+" "+(it.job||"")+" "+(it.year||"")).toLowerCase();
+  return terms.every(t=>hay.includes(t));
+}
+const byCat=it=>S.cat==="전체"||it.cat===S.cat;
+const byType=it=>S.type==="전체"||it.type===S.type;
+const byJob=it=>!S.job||(S.job==="공통"?!it.job:(it.job===S.job||!it.job));
+function filtered(){return S.items.filter(it=>byCat(it)&&byType(it)&&matchQ(it))}
+function companies(list){
+  const m=new Map();
+  list.forEach(it=>{if(!m.has(it.company))m.set(it.company,{name:it.company,cat:it.cat,items:[]});m.get(it.company).items.push(it)});
+  return [...m.values()].sort((a,b)=>ko(a.name,b.name));
+}
+
+/* ================= 렌더 ================= */
+function renderFilters(){
+  const base=S.items.filter(it=>byCat(it)&&matchQ(it)&&(!S.company||it.company===S.company));
+  $("#cats").innerHTML=["전체",...CATS].map(c=>`<button aria-pressed="${S.cat===c}" data-cat="${c}">${c}</button>`).join("");
+  $("#types").innerHTML=[{k:"전체",c:"--accent"},...TYPES].map(t=>{
+    const n=t.k==="전체"?base.length:base.filter(x=>x.type===t.k).length;
+    return `<button class="tchip" style="--c:var(${t.c})" aria-pressed="${S.type===t.k}" data-type="${t.k}"><span class="dot"></span>${t.k}<span class="n">${n}</span></button>`}).join("");
+}
+function renderCompanyList(){
+  const list=companies(S.items.filter(it=>byCat(it)&&byType(it)&&(matchQ(it)||it.company.toLowerCase().includes(S.q.trim().toLowerCase()))));
+  let html=`<div class="co-head"><span>기업 목록</span><span>${list.length}곳</span></div>`;
+  html+=`<button class="co-item" data-co="" aria-current="${!S.company}"><span>전체 기업 한눈에 보기</span></button>`;
+  const cats=S.cat==="전체"?CATS:[S.cat];
+  cats.forEach(c=>{
+    const g=list.filter(x=>x.cat===c); if(!g.length) return;
+    html+=`<div class="co-group">${c}</div>`+g.map(x=>`<button class="co-item" data-co="${esc(x.name)}" aria-current="${S.company===x.name}"><span>${esc(x.name)}</span><span class="n">${x.items.length}</span></button>`).join("");
+  });
+  $("#coList").innerHTML=html;
+  $("#coSelect").innerHTML=`<option value="">전체 기업 (${list.length}곳)</option>`+list.map(x=>`<option value="${esc(x.name)}" ${S.company===x.name?"selected":""}>[${x.cat}] ${esc(x.name)} · ${x.items.length}</option>`).join("");
+  $("#jobNames").innerHTML=[...new Set(S.items.map(x=>x.job).filter(Boolean))].sort(ko).map(j=>`<option value="${esc(j)}">`).join("");
+  $("#coNames").innerHTML=companies(S.items).map(x=>`<option value="${esc(x.name)}">`).join("");
+}
+function qRow(it){
+  const sel=S.sel.has(it.id);
+  const meta=[it.subType&&`<span class="st" style="--c:${typeColor(it.type)}">${esc(it.subType)}</span>`,it.year&&`${esc(it.year)}년`,it.job&&esc(it.job)].filter(Boolean).join("<span>·</span>");
+  return `<li class="q${sel?" sel":""}"><input type="checkbox" data-sel="${it.id}" ${sel?"checked":""} aria-label="선택">
+    <div class="body"><div class="txt">${hl(it.question)}</div>${meta?`<div class="meta">${meta}</div>`:""}</div>
+    ${S.admin?`<div class="adm"><button data-edit="${it.id}">수정</button><button data-del="${it.id}">삭제</button></div>`:""}</li>`;
+}
+function renderView(){
+  const v=$("#view"); const list=filtered();
+  if(S.company){
+    const coAll=list.filter(x=>x.company===S.company);
+    const all=coAll.filter(byJob);
+    const meta=S.items.find(x=>x.company===S.company);
+    const jobs=[...new Set(S.items.filter(x=>x.company===S.company&&x.job).map(x=>x.job))].sort(ko);
+    const jcount=j=>j==="전체"?coAll.length:j==="공통"?coAll.filter(x=>!x.job).length:coAll.filter(x=>x.job===j).length;
+    const jobBar=jobs.length?`<div class="jobs"><span>직무</span>${["전체","공통",...jobs].map(j=>`<button class="jchip" data-job="${esc(j)}" aria-pressed="${(S.job||"전체")===j}">${esc(j)}<span class="n">${jcount(j)}</span></button>`).join("")}${S.job&&S.job!=="공통"?`<span style="margin-left:6px">· 공통 질문 포함</span>`:""}</div>`:"";
+    const types=S.type==="전체"?TYPES:TYPES.filter(t=>t.k===S.type);
+    v.innerHTML=`<div class="view-head"><h1>${esc(S.company)} <span class="badge">${esc(meta?meta.cat:"")}</span></h1>
+      <span class="sum">${TYPES.map(t=>`${t.k} ${all.filter(x=>x.type===t.k).length}`).join(" · ")}</span>
+      ${S.admin?`<button class="btn" id="coEdit">기업 정보 수정</button>`:""}
+      <button class="btn" id="coAllSel">이 기업 전체 선택</button></div>${jobBar}
+      <div class="board">${types.map(t=>{
+        const qs=all.filter(x=>x.type===t.k).sort((a,b)=>ko(a.subType||"",b.subType||""));
+        const allSel=qs.length&&qs.every(x=>S.sel.has(x.id));
+        return `<div class="col" style="--c:var(${t.c})"><div class="col-h"><b>${t.k}</b><span class="n">${qs.length}</span>
+          ${qs.length?`<label><input type="checkbox" data-selcol="${t.k}" ${allSel?"checked":""}>전체</label>`:""}</div>
+          ${qs.length?`<ol>${groupByJob(qs)}</ol>`:`<div class="none">등록된 ${t.k} 기출이 없습니다.</div>`}</div>`}).join("")}</div>`;
+    return;
+  }
+  const searching=S.q.trim()||S.type!=="전체";
+  if(!searching){
+    const cos=companies(list);
+    v.innerHTML=`<div class="view-head"><h1>${S.cat==="전체"?"전체 기업":S.cat}</h1><span class="sum">${cos.length}개 기업 · 기출 ${list.length}개</span></div>`+
+      (cos.length?`<div class="co-grid">${cos.map(c=>{
+        const n=c.items.length;
+        return `<button class="co-card" data-co="${esc(c.name)}"><div><div class="nm">${esc(c.name)}</div><div class="cat">${c.cat} · 기출 ${n}개</div></div>
+          <div class="bar">${TYPES.map(t=>{const k=c.items.filter(x=>x.type===t.k).length;return k?`<span style="width:${k/n*100}%;background:var(${t.c})"></span>`:""}).join("")}</div>
+          <div class="mini">${TYPES.map(t=>{const k=c.items.filter(x=>x.type===t.k).length;return k?`<span><i style="background:var(${t.c})"></i>${t.k} ${k}</span>`:""}).join("")}</div></button>`}).join("")}</div>`
+      :`<div class="empty">아직 등록된 기출이 없습니다.${S.admin?" 상단의 <b>기출 등록</b>에서 구글독 내용을 붙여넣어 시작하세요.":""}</div>`);
+    return;
+  }
+  const cos=companies(list);
+  v.innerHTML=`<div class="view-head"><h1>검색 결과</h1><span class="sum">${cos.length}개 기업 · ${list.length}개 질문</span>${list.length?`<button class="btn" id="resAllSel">결과 전체 선택</button>`:""}</div>`+
+    (cos.length?cos.map(c=>`<div class="group"><div class="group-h"><button class="link" data-co="${esc(c.name)}">${esc(c.name)}</button><span class="badge">${c.cat}</span>
+      ${TYPES.map(t=>{const k=c.items.filter(x=>x.type===t.k).length;return k?`<span class="tag" style="--c:var(${t.c})">${t.k} ${k}</span>`:""}).join("")}</div>
+      <ol style="list-style:none;margin:0;padding:0">${c.items.sort((a,b)=>TYPES.findIndex(t=>t.k===a.type)-TYPES.findIndex(t=>t.k===b.type)).map(it=>qRow(it).replace('<div class="body">',`<div class="body"><span class="tag" style="--c:${typeColor(it.type)};margin-right:6px">${it.type}</span>`)).join("")}</ol></div>`).join("")
+    :`<div class="empty">'${esc(S.q)}'에 해당하는 기출이 없습니다. 다른 키워드로 검색해 보세요.</div>`);
+}
+function groupByJob(qs){
+  const js=[...new Set(qs.map(x=>x.job||""))];
+  if(js.length<2)return qs.map(qRow).join("");
+  js.sort((a,b)=>(a===""?-1:b===""?1:ko(a,b)));
+  return js.map(j=>`<li class="sub-h">${j?esc(j):"공통"}</li>`+qs.filter(x=>(x.job||"")===j).map(qRow).join("")).join("");
+}
+function renderSel(){
+  $("#selbar").classList.toggle("on",S.sel.size>0);
+  $("#selCount").textContent=`${S.sel.size}개 선택`;
+}
+function render(){renderFilters();renderCompanyList();renderView();renderSel()}
+
+/* ================= 이벤트 ================= */
+$("#q").addEventListener("input",e=>{S.q=e.target.value;render()});
+$("#cats").addEventListener("click",e=>{const b=e.target.closest("[data-cat]");if(!b)return;S.cat=b.dataset.cat;
+  if(S.company&&!S.items.some(x=>x.company===S.company&&byCat(x)))S.company=null;render()});
+$("#types").addEventListener("click",e=>{const b=e.target.closest("[data-type]");if(!b)return;S.type=b.dataset.type;render()});
+$("#coSelect").addEventListener("change",e=>{S.company=e.target.value||null;S.job=null;render();scrollTo({top:0})});
+document.addEventListener("click",e=>{
+  const co=e.target.closest("[data-co]");
+  if(co){S.company=co.dataset.co||null;S.job=null;render();scrollTo({top:0});return}
+  const jb=e.target.closest("[data-job]");
+  if(jb){S.job=jb.dataset.job==="전체"?null:jb.dataset.job;render();return}
+  if(e.target.id==="coAllSel"){filtered().filter(x=>x.company===S.company&&byJob(x)).forEach(x=>S.sel.add(x.id));render()}
+  if(e.target.id==="resAllSel"){filtered().forEach(x=>S.sel.add(x.id));render()}
+  if(e.target.id==="coEdit")openCoEdit();
+  const ed=e.target.closest("[data-edit]"); if(ed)openEdit(ed.dataset.edit);
+  const del=e.target.closest("[data-del]");
+  if(del){
+    if(!del.classList.contains("arm")){del.classList.add("arm");del.textContent="정말 삭제";setTimeout(()=>{del.classList.remove("arm");del.textContent="삭제"},3000);return}
+    store.remove(del.dataset.del).then(()=>{S.sel.delete(del.dataset.del);toast("삭제했습니다")}).catch(err=>toast("삭제 실패: "+err.message));
+  }
+});
+document.addEventListener("change",e=>{
+  if(e.target.dataset.sel){const id=e.target.dataset.sel;e.target.checked?S.sel.add(id):S.sel.delete(id);e.target.closest(".q").classList.toggle("sel",e.target.checked);renderSel()}
+  if(e.target.dataset.selcol){const qs=filtered().filter(x=>x.company===S.company&&byJob(x)&&x.type===e.target.dataset.selcol);qs.forEach(x=>e.target.checked?S.sel.add(x.id):S.sel.delete(x.id));render()}
+});
+$("#selClear").onclick=()=>{S.sel.clear();render()};
+$("#selDown").onclick=()=>download(S.items.filter(x=>S.sel.has(x.id)));
+$("#btnAll").onclick=()=>{const l=S.company?filtered().filter(x=>x.company===S.company&&byJob(x)):filtered();if(!l.length)return toast("다운로드할 기출이 없습니다");download(l)};
+
+/* 로그인 */
+$("#btnLogin").onclick=()=>{if(S.user){store.logout();return}$("#lgMsg").textContent=DEMO?"데모 모드: 아무 값이나 입력하면 관리자로 들어갑니다.":"";open("#mLogin")};
+$("#fLogin").addEventListener("submit",async e=>{e.preventDefault();$("#lgMsg").textContent="로그인 중…";
+  try{await store.login($("#lgEmail").value.trim(),$("#lgPw").value);$("#mLogin").hidden=true}
+  catch(err){$("#lgMsg").textContent="로그인하지 못했습니다. 이메일과 비밀번호를 확인하세요. ("+err.code+")"}});
+function onAuth(u){S.user=u;S.admin=!!u&&(DEMO||ADMIN_EMAILS.includes(u.email));
+  $("#btnLogin").textContent=u?"로그아웃":"관리자 로그인";$("#btnAdmin").hidden=!S.admin;
+  if(u&&!S.admin)toast("관리자 권한이 없는 계정입니다");render()}
+
+/* 등록 모달 */
+const opt=(arr,v)=>arr.map(x=>`<option ${x===v?"selected":""}>${x}</option>`).join("");
+function setTab(t){$("#adTabs").querySelectorAll("button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));$("#fOne").hidden=t!=="one";$("#fBulk").hidden=t!=="bulk"}
+$("#adTabs").onclick=e=>{const b=e.target.closest("[data-tab]");if(b)setTab(b.dataset.tab)};
+$("#btnAdmin").onclick=()=>{
+  S.editing=null;$("#adT").textContent="기출 등록";$("#adTabs").hidden=false;setTab("one");
+  const cur=S.items.find(x=>x.company===S.company);
+  $("#oCat").innerHTML=opt(CATS,cur?cur.cat:(S.cat!=="전체"?S.cat:"공기업"));$("#bCat").innerHTML=$("#oCat").innerHTML;
+  $("#oType").innerHTML=opt(TYPES.map(t=>t.k),S.type!=="전체"?S.type:"인성");
+  $("#oCo").value=S.company||"";$("#oSub").value="";$("#oYear").value="";$("#oJob").value=S.job&&S.job!=="공통"?S.job:"";$("#oQ").value="";
+  $("#oQLabel").textContent="질문 (한 줄에 하나씩, 여러 줄이면 여러 개 등록)";$("#oSubmit").textContent="등록";
+  $("#bOut").innerHTML="";$("#bSave").disabled=true;open("#mAdmin");
+};
+function openEdit(id){
+  const it=S.items.find(x=>x.id===id);if(!it)return;S.editing=id;
+  $("#adT").textContent="기출 수정";$("#adTabs").hidden=true;setTab("one");
+  $("#oCat").innerHTML=opt(CATS,it.cat);$("#oType").innerHTML=opt(TYPES.map(t=>t.k),it.type);
+  $("#oCo").value=it.company;$("#oSub").value=it.subType||"";$("#oYear").value=it.year||"";$("#oJob").value=it.job||"";$("#oQ").value=it.question;
+  $("#oQLabel").textContent="질문";$("#oSubmit").textContent="저장";open("#mAdmin");
+}
+$("#fOne").addEventListener("submit",async e=>{e.preventDefault();
+  const base={cat:$("#oCat").value,company:$("#oCo").value.trim(),type:$("#oType").value,subType:$("#oSub").value.trim(),year:$("#oYear").value.trim(),job:$("#oJob").value.trim()};
+  if(!base.company)return toast("기업명을 입력하세요");
+  try{
+    if(S.editing){await store.update(S.editing,{...base,question:$("#oQ").value.trim()});toast("저장했습니다");$("#mAdmin").hidden=true;return}
+    const qs=$("#oQ").value.split("\n").map(cleanLine).filter(Boolean);
+    const exist=new Set(S.items.map(keyOf));
+    const fresh=qs.map(q=>({...base,question:q})).filter(x=>!exist.has(keyOf(x)));
+    if(!fresh.length)return toast("모두 이미 등록된 질문입니다");
+    await store.addMany(fresh);toast(`${fresh.length}개 등록${qs.length-fresh.length?` (중복 ${qs.length-fresh.length}개 제외)`:""}`);
+    $("#oQ").value="";S.company=base.company;render();
+  }catch(err){toast("저장 실패: "+err.message)}
+});
+
+/* 구글독 붙여넣기 파서 */
+const TYPE_MAP=[[/^(pt|발표|프레젠테이션)/i,"PT"],[/^(토론|토의|집단토론|그룹토의)/,"토론"],[/^(인성|임원|경영진|최종)/,"인성"],[/^(직무|실무|기술|전공)/,"직무"]];
+function cleanLine(s){return s.replace(/^\s*(\d+\s*[.)]|Q\s*\d*\s*[.:)]|[-•·▶▷○●■□*–]\s*)\s*/i,"").trim()}
+function keyOf(x){return x.company+"|"+x.type+"|"+(x.job||"")+"|"+norm(x.question)}
+function parseHeader(inner,fallbackCo,fallbackJob){
+  let s=inner.replace(/\s+/g," ").trim().replace(/\s*기출$/,""),job="";
+  const jm=s.match(/\s*[(（]([^)）]+)[)）]\s*$/)||s.match(/\s+[-–:/]\s*([^-–:/]+)$/);
+  if(jm){job=jm[1].trim();s=s.slice(0,jm.index).trim()}
+  const parts=s.split(" ");
+  let label=s, company="";
+  if(parts.length>1){label=parts.pop();company=parts.join(" ")}
+  // "한국가스공사PT면접"처럼 붙어 있는 경우
+  if(!company){const m=s.match(/^(.*?)(PT|발표|토론|토의|인성|직무|임원|실무|영어|AI|역량|상황)\s*면접?$/i);if(m&&m[1]){company=m[1].trim();label=m[2]}}
+  const raw=label.replace(/면접$/,"").replace(/[()]/g," ").trim()||label;
+  let type="기타",subType=raw+"면접";
+  for(const [re,t] of TYPE_MAP)if(re.test(raw)){type=t;subType=(t==="인성"&&/^(임원|경영진|최종)/.test(raw))?raw+"면접":"";break}
+  return {company:company||fallbackCo||"",type,subType,job:job||fallbackJob||""};
+}
+function parseDoc(text,d){
+  const out=[];let cur=null;
+  text.split(/\r?\n/).forEach(line=>{
+    const t=line.trim();if(!t)return;
+    const h=t.match(/^[\[【]\s*(.+?)\s*[\]】]$/);
+    if(h){cur=parseHeader(h[1],d.company,d.job);return}
+    const q=cleanLine(t);if(!q)return;
+    const c=cur||{company:d.company,type:"인성",subType:"",job:d.job};
+    out.push({cat:d.cat,company:c.company,type:c.type,subType:c.subType,year:d.year,job:c.job,question:q});
+  });
+  return out;
+}
+$("#bPrev").onclick=()=>{
+  const rows=parseDoc($("#bText").value,{cat:$("#bCat").value,company:$("#bCo").value.trim(),year:$("#bYear").value.trim(),job:$("#bJob").value.trim()});
+  const exist=new Set(S.items.map(keyOf)),seen=new Set();
+  rows.forEach(r=>{const k=keyOf(r);r._dup=exist.has(k)||seen.has(k);seen.add(k)});
+  S.bulk=rows;const ok=rows.filter(r=>!r._dup&&r.company);
+  const noCo=rows.filter(r=>!r.company).length;
+  $("#bOut").innerHTML=rows.length?`<p class="hint">총 ${rows.length}개 · <b>신규 ${ok.length}개</b> · 중복 ${rows.filter(r=>r._dup).length}개 제외${noCo?` · <b style="color:var(--danger)">기업명 없음 ${noCo}개</b> (위 '기업명' 칸을 채우세요)`:""}</p>
+    <div class="prev"><table><thead><tr><th>기업</th><th>유형</th><th>직무</th><th>세부</th><th>질문</th></tr></thead><tbody>${rows.map(r=>`<tr class="${r._dup?"dup":""}"><td>${esc(r.company)||"<b style='color:var(--danger)'>?</b>"}</td><td><span class="tag" style="--c:${typeColor(r.type)}">${r.type}</span></td><td>${esc(r.job)||"공통"}</td><td>${esc(r.subType)}</td><td>${esc(r.question)}</td></tr>`).join("")}</tbody></table></div>`
+    :`<p class="hint">붙여넣은 내용에서 질문을 찾지 못했습니다.</p>`;
+  $("#bSave").disabled=!ok.length;
+};
+$("#bSave").onclick=async()=>{
+  const ok=S.bulk.filter(r=>!r._dup&&r.company).map(({_dup,...r})=>r);
+  $("#bSave").disabled=true;
+  try{await store.addMany(ok);toast(`${ok.length}개 등록했습니다`);$("#bText").value="";$("#bOut").innerHTML="";S.bulk=[]}
+  catch(err){toast("등록 실패: "+err.message);$("#bSave").disabled=false}
+};
+
+/* 기업 정보 수정 */
+function openCoEdit(){const it=S.items.find(x=>x.company===S.company);$("#cName").value=S.company;$("#cCat").innerHTML=opt(CATS,it?it.cat:"공기업");open("#mCo")}
+$("#fCo").addEventListener("submit",async e=>{e.preventDefault();
+  const ids=S.items.filter(x=>x.company===S.company).map(x=>x.id),name=$("#cName").value.trim();
+  try{await store.updateMany(ids,{company:name,cat:$("#cCat").value});S.company=name;$("#mCo").hidden=true;toast("기업 정보를 바꿨습니다")}
+  catch(err){toast("저장 실패: "+err.message)}});
+
+/*XLSX-START*/
+const GUIDE={
+  "인성":"① 결론 한 문장\n② 경험(상황→행동→결과)\n③ 배운 점 → 입사 후 연결",
+  "직무":"① 직무 이해(정의·핵심역량)\n② 근거: 경험·지식·자격\n③ 입사 후 적용 계획",
+  "PT":"① 현황·배경\n② 문제 정의(원인)\n③ 해결방안 2~3개\n④ 기대효과·리스크",
+  "토론":"① 입장 + 핵심 근거\n② 예상 반론과 재반박\n③ 절충안·합의 제안",
+  "기타":"① 질문 형식 확인\n② 핵심 답 먼저\n③ 근거 1개 + 마무리"
+};
+async function buildWorkbook(ExcelJS,items){
+  const order=["인성","직무","PT","토론","기타"];
+  items=[...items].sort((a,b)=>a.company.localeCompare(b.company,"ko")||order.indexOf(a.type)-order.indexOf(b.type)||(a.job||"").localeCompare(b.job||"","ko"));
+  const wb=new ExcelJS.Workbook();wb.creator="GritMindLab";
+  const ACC="FF1F4FBF",HEAD="FF1B2130",SOFT="FFEEF2FB",LINE="FFD5DAE3";
+  const TC={"인성":"FF1D8A5B","직무":"FF2860C9","PT":"FFC8641C","토론":"FF7B47B8","기타":"FF6B7280"};
+  const border={top:{style:"thin",color:{argb:LINE}},left:{style:"thin",color:{argb:LINE}},bottom:{style:"thin",color:{argb:LINE}},right:{style:"thin",color:{argb:LINE}}};
+  const font="맑은 고딕";
+
+  /* 1. 스크립트 연습 */
+  const ws=wb.addWorksheet("스크립트 연습",{views:[{state:"frozen",ySplit:4,xSplit:4}],
+    pageSetup:{orientation:"landscape",fitToPage:true,fitToWidth:1,fitToHeight:0,paperSize:9}});
+  const cols=[["No",5],["기업",14],["유형",8],["기출 질문",38],["답변 구조 가이드",26],["나의 답변 스크립트",62],["핵심 키워드 3개",18],["예상 꼬리질문",24],["글자 수",8],["예상 발화(초)",10],["연습①",7],["연습②",7],["연습③",7],["자가점검\n(1~5)",9],["피드백 메모",26]];
+  ws.columns=cols.map(([h,w])=>({width:w}));
+  const cos=[...new Set(items.map(x=>x.company))];
+  ws.mergeCells("A1:O1");
+  ws.getCell("A1").value=`면접 스크립트 연습지 · ${cos.length>3?cos.slice(0,3).join(", ")+` 외 ${cos.length-3}곳`:cos.join(", ")}`;
+  ws.getCell("A1").font={name:font,size:16,bold:true,color:{argb:HEAD}};
+  ws.getRow(1).height=30;
+  ws.mergeCells("A2:O2");
+  ws.getCell("A2").value="이름: ____________    작성일: ____________    ▸ F열에 답변을 쓰면 글자 수·예상 발화 시간이 자동 계산됩니다. 인성·직무 답변은 45~90초(약 250~500자)가 적당합니다.";
+  ws.getCell("A2").font={name:font,size:10,color:{argb:"FF5F6878"}};
+  ws.getRow(3).height=6;
+  const hr=ws.getRow(4);
+  cols.forEach(([h],i)=>{const c=hr.getCell(i+1);c.value=h;c.font={name:font,bold:true,color:{argb:"FFFFFFFF"},size:10};
+    c.fill={type:"pattern",pattern:"solid",fgColor:{argb:i===5?ACC:HEAD}};c.alignment={vertical:"middle",horizontal:"center",wrapText:true};c.border=border});
+  hr.height=32;
+  items.forEach((it,i)=>{
+    const r=5+i,row=ws.getRow(r);
+    const qtext=it.question+(it.subType?`  [${it.subType}]`:"");
+    row.values=[i+1,it.company+(it.job?`\n(${it.job})`:""),it.type,qtext,GUIDE[it.type]||GUIDE["기타"],"","","",
+      {formula:`IF(F${r}="","",LEN(F${r}))`},
+      {formula:`IF(F${r}="","",ROUND(LEN(SUBSTITUTE(F${r}," ",""))/5.5,0))`},"","","","",""];
+    row.height=it.type==="PT"||it.type==="토론"?170:120;
+    row.eachCell({includeEmpty:true},(c,n)=>{if(n>15)return;c.border=border;c.font={name:font,size:10};c.alignment={vertical:"top",wrapText:true}});
+    row.getCell(1).alignment={vertical:"top",horizontal:"center"};
+    row.getCell(3).font={name:font,size:10,bold:true,color:{argb:TC[it.type]||TC["기타"]}};
+    row.getCell(3).alignment={vertical:"top",horizontal:"center"};
+    row.getCell(4).font={name:font,size:10.5,bold:true};
+    row.getCell(5).font={name:font,size:9,color:{argb:"FF5F6878"}};
+    row.getCell(5).fill={type:"pattern",pattern:"solid",fgColor:{argb:"FFF6F7F9"}};
+    row.getCell(6).fill={type:"pattern",pattern:"solid",fgColor:{argb:SOFT}};
+    [9,10,11,12,13,14].forEach(n=>row.getCell(n).alignment={vertical:"top",horizontal:"center"});
+    [11,12,13].forEach(n=>row.getCell(n).dataValidation={type:"list",allowBlank:true,formulae:['"✓"']});
+    row.getCell(14).dataValidation={type:"list",allowBlank:true,formulae:['"1,2,3,4,5"'],showErrorMessage:true,errorTitle:"점수",error:"1~5 중에서 고르세요"};
+  });
+  const last=4+items.length;
+  if(items.length){
+    ws.addConditionalFormatting({ref:`J5:J${last}`,rules:[
+      {type:"cellIs",operator:"greaterThan",formulae:[90],style:{fill:{type:"pattern",pattern:"solid",bgColor:{argb:"FFFBD5D5"}},font:{color:{argb:"FFC53030"},bold:true}}},
+      {type:"cellIs",operator:"between",formulae:[45,90],style:{fill:{type:"pattern",pattern:"solid",bgColor:{argb:"FFD9F2E5"}},font:{color:{argb:"FF1D8A5B"},bold:true}}}]});
+    ws.addConditionalFormatting({ref:`N5:N${last}`,rules:[
+      {type:"cellIs",operator:"lessThan",formulae:[3],style:{fill:{type:"pattern",pattern:"solid",bgColor:{argb:"FFFDEBD3"}}}}]});
+  }
+  ws.autoFilter={from:"A4",to:`O${Math.max(last,4)}`};
+  ws.pageSetup.printTitlesRow="4:4";
+
+  /* 2. 연습 현황 */
+  const st=wb.addWorksheet("연습 현황");
+  st.columns=[{width:14},{width:12},{width:14},{width:14},{width:16}];
+  st.mergeCells("A1:E1");st.getCell("A1").value="유형별 연습 현황";st.getCell("A1").font={name:font,size:15,bold:true};st.getRow(1).height=28;
+  const sh=st.getRow(3);["유형","질문 수","스크립트 작성","3회 연습 완료","평균 자가점검"].forEach((h,i)=>{const c=sh.getCell(i+1);c.value=h;c.font={name:font,bold:true,color:{argb:"FFFFFFFF"}};c.fill={type:"pattern",pattern:"solid",fgColor:{argb:HEAD}};c.alignment={horizontal:"center"};c.border=border});
+  const R=`'스크립트 연습'!`,L=Math.max(last,5);
+  [...order,"합계"].forEach((t,i)=>{
+    const r=4+i,row=st.getRow(r);
+    if(t==="합계"){row.values=[t,{formula:`SUM(B4:B8)`},{formula:`SUM(C4:C8)`},{formula:`SUM(D4:D8)`},{formula:`IFERROR(AVERAGE(${R}N5:N${L}),"-")`}];row.font={name:font,bold:true}}
+    else row.values=[t,{formula:`COUNTIF(${R}C5:C${L},"${t}")`},{formula:`COUNTIFS(${R}C5:C${L},"${t}",${R}F5:F${L},"<>")`},
+      {formula:`COUNTIFS(${R}C5:C${L},"${t}",${R}M5:M${L},"✓")`},{formula:`IFERROR(AVERAGEIF(${R}C5:C${L},"${t}",${R}N5:N${L}),"-")`}];
+    row.eachCell(c=>{c.border=border;c.alignment={horizontal:"center"};if(!c.font||!c.font.bold)c.font={name:font}});
+    row.getCell(5).numFmt="0.0";
+    if(TC[t])row.getCell(1).font={name:font,bold:true,color:{argb:TC[t]}};
+  });
+
+  /* 3. 작성 가이드 */
+  const g=wb.addWorksheet("작성 가이드");
+  g.columns=[{width:12},{width:44},{width:46}];
+  g.mergeCells("A1:C1");g.getCell("A1").value="유형별 답변 작성 가이드";g.getCell("A1").font={name:font,size:15,bold:true};g.getRow(1).height=28;
+  const gh=g.getRow(3);["유형","답변 구조","체크 포인트"].forEach((h,i)=>{const c=gh.getCell(i+1);c.value=h;c.font={name:font,bold:true,color:{argb:"FFFFFFFF"}};c.fill={type:"pattern",pattern:"solid",fgColor:{argb:HEAD}};c.border=border});
+  const tips={
+    "인성":"· 첫 문장에 결론(두괄식)\n· 경험은 하나만, 숫자로 결과 표현\n· 45~90초 / 기관 인재상 키워드 1개 연결",
+    "직무":"· 직무기술서(NCS) 용어를 그대로 활용\n· '할 수 있다'보다 '해봤다'의 근거\n· 입사 후 첫 1년 계획을 구체적으로",
+    "PT":"· 발표 5분 기준: 현황1·문제1·해결2·효과1\n· 기관 사업·보도자료 근거 1개 이상\n· 질의응답용 한계·리스크 미리 준비",
+    "토론":"· 말하기보다 경청·요약이 평가 포인트\n· 상대 의견 인정 후 근거 제시\n· 마지막에 합의안 정리 역할 자처",
+    "기타":"· 영어·AI·상황면접 등 형식을 먼저 확인\n· 핵심 답을 먼저, 근거는 짧게\n· 기관별 공지 기준을 확인"
+  };
+  order.forEach((t,i)=>{const row=g.getRow(4+i);row.values=[t,GUIDE[t].replace(/\n/g,"\n"),tips[t]];row.height=62;
+    row.eachCell(c=>{c.border=border;c.alignment={vertical:"top",wrapText:true};c.font={name:font,size:10}});
+    row.getCell(1).font={name:font,bold:true,color:{argb:TC[t]}}});
+  const sc=g.getRow(11);sc.getCell(1).value="자가점검 기준";sc.getCell(1).font={name:font,bold:true};
+  ["5 — 막힘없이 시간 안에, 근거·결론 모두 명확","4 — 내용은 충분, 말투·속도 조금 다듬기","3 — 핵심은 있으나 근거가 약하거나 시간 초과","2 — 스크립트를 보고서야 답할 수 있음","1 — 아직 답변 방향이 없음"].forEach((s,i)=>{const c=g.getCell(`B${12+i}`);c.value=s;c.font={name:font,size:10}});
+  return wb;
+}
+/*XLSX-END*/
+
+async function download(items){
+  if(!items.length)return toast("선택한 기출이 없습니다");
+  if(typeof ExcelJS==="undefined")return toast("엑셀 라이브러리를 불러오지 못했습니다. 새로고침해 주세요");
+  try{
+    const wb=await buildWorkbook(ExcelJS,items);
+    const buf=await wb.xlsx.writeBuffer();
+    const cos=[...new Set(items.map(x=>x.company))];
+    const name=`면접스크립트_${cos.length===1?cos[0]:cos[0]+"외"+(cos.length-1)}_${new Date().toISOString().slice(0,10)}.xlsx`.replace(/[\\/:*?"<>|()]/g,"");
+    const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));
+    a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);
+    toast(`${items.length}개 질문으로 엑셀을 만들었습니다`);
+  }catch(err){toast("엑셀 생성 실패: "+err.message)}
+}
+
+/* ================= 시작 ================= */
+(async()=>{
+  $("#demoNote").hidden=!DEMO;
+  try{store=DEMO?demoStore():await firebaseStore()}
+  catch(err){toast("Firebase 연결 실패: "+err.message);store=demoStore()}
+  store.start(items=>{S.items=items.map(x=>({cat:"공기업",type:"인성",subType:"",year:"",job:"",...x}));
+    const ids=new Set(S.items.map(x=>x.id));S.sel.forEach(id=>{if(!ids.has(id))S.sel.delete(id)});render()},onAuth);
+})();
+</script>
+</body>
+</html>

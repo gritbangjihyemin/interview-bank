@@ -246,16 +246,16 @@ mark{background:var(--mark);color:inherit;border-radius:2px;padding:0 1px}
   <form class="sheet-b" id="fMemo" hidden>
     <p class="hint">관찰면접·상황면접·인바스켓처럼 <b>상황 하나를 통째로</b> 올릴 때 쓰세요. 줄바꿈이 그대로 저장되고, 한 건으로 등록됩니다.</p>
     <div class="grid2">
-      <label class="field"><span>기업 구분</span><select id="mCat"></select></label>
-      <label class="field"><span>기업명</span><input id="mCo" list="coNames" required placeholder="예: 한국수자원공사"></label>
-      <label class="field"><span>면접 유형</span><select id="mType"></select></label>
-      <label class="field"><span>면접 이름</span><input id="mSub" list="memoNames" required placeholder="예: 관찰면접"></label>
-      <label class="field"><span>직무 (비우면 공통)</span><input id="mJob" list="jobNames" placeholder="예: 전기"></label>
-      <label class="field"><span>연도 (선택)</span><input id="mYear" inputmode="numeric" placeholder="2026"></label>
+      <label class="field"><span>기업 구분</span><select id="meCat"></select></label>
+      <label class="field"><span>기업명</span><input id="meCo" list="coNames" required placeholder="예: 한국수자원공사"></label>
+      <label class="field"><span>면접 유형</span><select id="meType"></select></label>
+      <label class="field"><span>면접 이름</span><input id="meSub" list="memoNames" required placeholder="예: 관찰면접"></label>
+      <label class="field"><span>직무 (비우면 공통)</span><input id="meJob" list="jobNames" placeholder="예: 전기"></label>
+      <label class="field"><span>연도 (선택)</span><input id="meYear" inputmode="numeric" placeholder="2026"></label>
     </div>
-    <label class="field"><span>제목</span><input id="mTitle" required placeholder="예: 신규 사업 홍보 방안 도출 (조별 과제)"></label>
-    <label class="field"><span>상황·내용</span><textarea id="mBody" style="min-height:240px" placeholder="[상황]&#10;당신은 ○○팀 신입사원이다...&#10;&#10;[과제]&#10;1. ...&#10;2. ...&#10;&#10;[진행 방식]&#10;조별 6명, 준비 10분 + 토의 30분"></textarea></label>
-    <div class="actions"><button class="btn primary" type="submit" id="mSubmit">등록</button></div>
+    <label class="field"><span>제목</span><input id="meTitle" required placeholder="예: 신규 사업 홍보 방안 도출 (조별 과제)"></label>
+    <label class="field"><span>상황·내용</span><textarea id="meBody" style="min-height:240px" placeholder="[상황]&#10;당신은 ○○팀 신입사원이다...&#10;&#10;[과제]&#10;1. ...&#10;2. ...&#10;&#10;[진행 방식]&#10;조별 6명, 준비 10분 + 토의 30분"></textarea></label>
+    <div class="actions"><button class="btn primary" type="submit" id="meSubmit">등록</button></div>
   </form>
   <div class="sheet-b" id="fBulk" hidden>
     <p class="hint">구글독 내용을 그대로 복사해 붙여넣으세요. <code>[한국가스공사 PT면접]</code> 같은 대괄호 제목 줄 아래의 줄들이 각각 하나의 질문으로 등록됩니다. 직무를 나누려면 괄호로 적으세요: <code>[한국가스공사 직무면접(기계)]</code>. 인성·직무·PT·토론이 아닌 제목(예: <code>[한국가스공사 영어면접]</code>)은 <b>기타</b>로 들어가고 '영어면접'이 세부유형이 됩니다.</p>
@@ -549,29 +549,29 @@ $("#btnAdmin").onclick=()=>{
   $("#oCo").value=S.company||"";$("#oSub").value="";$("#oYear").value="";$("#oJob").value=S.job&&S.job!=="공통"?S.job:"";$("#oQ").value="";
   $("#oQLabel").textContent="질문 (한 줄에 하나씩, 여러 줄이면 여러 개 등록)";$("#oSubmit").textContent="등록";
   $("#bOut").innerHTML="";$("#bSave").disabled=true;
-  $("#mCat").innerHTML=$("#oCat").innerHTML;$("#mType").innerHTML=opt(TYPES.map(t=>t.k),"기타");
-  $("#mCo").value=S.company||"";$("#mSub").value="";$("#mJob").value=S.job&&S.job!=="공통"?S.job:"";$("#mYear").value="";$("#mTitle").value="";$("#mBody").value="";$("#mSubmit").textContent="등록";
+  $("#meCat").innerHTML=$("#oCat").innerHTML;$("#meType").innerHTML=opt(TYPES.map(t=>t.k),"기타");
+  $("#meCo").value=S.company||"";$("#meSub").value="";$("#meJob").value=S.job&&S.job!=="공통"?S.job:"";$("#meYear").value="";$("#meTitle").value="";$("#meBody").value="";$("#meSubmit").textContent="등록";
   open("#mAdmin");
 };
 function openEdit(id){
   const it=S.items.find(x=>x.id===id);if(!it)return;S.editing=id;
   $("#adT").textContent="기출 수정";$("#adTabs").hidden=true;
   if(it.kind==="memo"){setTab("memo");
-    $("#mCat").innerHTML=opt(CATS,it.cat);$("#mType").innerHTML=opt(TYPES.map(t=>t.k),it.type);
-    $("#mCo").value=it.company;$("#mSub").value=it.subType||"";$("#mJob").value=it.job||"";$("#mYear").value=it.year||"";$("#mTitle").value=it.question;$("#mBody").value=it.body||"";
-    $("#mSubmit").textContent="저장";open("#mAdmin");return}
+    $("#meCat").innerHTML=opt(CATS,it.cat);$("#meType").innerHTML=opt(TYPES.map(t=>t.k),it.type);
+    $("#meCo").value=it.company;$("#meSub").value=it.subType||"";$("#meJob").value=it.job||"";$("#meYear").value=it.year||"";$("#meTitle").value=it.question;$("#meBody").value=it.body||"";
+    $("#meSubmit").textContent="저장";open("#mAdmin");return}
   setTab("one");
   $("#oCat").innerHTML=opt(CATS,it.cat);$("#oType").innerHTML=opt(TYPES.map(t=>t.k),it.type);
   $("#oCo").value=it.company;$("#oSub").value=it.subType||"";$("#oYear").value=it.year||"";$("#oJob").value=it.job||"";$("#oQ").value=it.question;
   $("#oQLabel").textContent="질문";$("#oSubmit").textContent="저장";open("#mAdmin");
 }
 $("#fMemo").addEventListener("submit",async e=>{e.preventDefault();
-  const d={kind:"memo",cat:$("#mCat").value,company:$("#mCo").value.trim(),type:$("#mType").value,subType:$("#mSub").value.trim(),job:$("#mJob").value.trim(),year:$("#mYear").value.trim(),question:$("#mTitle").value.trim(),body:$("#mBody").value.replace(/\s+$/,"")};
+  const d={kind:"memo",cat:$("#meCat").value,company:$("#meCo").value.trim(),type:$("#meType").value,subType:$("#meSub").value.trim(),job:$("#meJob").value.trim(),year:$("#meYear").value.trim(),question:$("#meTitle").value.trim(),body:$("#meBody").value.replace(/\s+$/,"")};
   if(!d.company||!d.question)return toast("기업명과 제목을 입력하세요");
   if(!d.body.trim())return toast("상황·내용을 입력하세요");
   try{
     if(S.editing){await store.update(S.editing,d);toast("저장했습니다");$("#mAdmin").hidden=true;return}
-    await store.addMany([d]);toast(`'${d.subType}' 1건 등록했습니다`);$("#mTitle").value="";$("#mBody").value="";S.company=d.company;render();
+    await store.addMany([d]);toast(`'${d.subType}' 1건 등록했습니다`);$("#meTitle").value="";$("#meBody").value="";S.company=d.company;render();
   }catch(err){toast("저장 실패: "+err.message)}
 });
 $("#fOne").addEventListener("submit",async e=>{e.preventDefault();

@@ -12,24 +12,24 @@
 :root{
   --bg:#f5f6f8; --surface:#ffffff; --surface-2:#eef0f4; --line:#dde1e8;
   --fg:#1b2130; --muted:#5f6878; --accent:#1f4fbf; --accent-ink:#ffffff; --accent-soft:#e3eafb;
-  --t-insung:#1f2f5c; --t-jikmu:#3d5a99; --t-pt:#6f89c2; --t-toron:#a3b4dc; --t-etc:#9097a3;
+  --t-insung:#9b1c1c; --t-jikmu:#d64545; --t-pt:#c99a06; --t-toron:#f2d35b; --t-etc:#9aa0a8;
   --mark:#ffe58a; --danger:#c53030;
   --f-display:"Gothic A1","IBM Plex Sans KR",system-ui,sans-serif;
   --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
   --r:10px;
-  --cat-big:#e7effd; --cat-pub:#e3f5ea; --cat-fin:#fff3d6; --cat-sme:#fde8ee; --cat-gov:#eee7fb;
-  --cat-big-ink:#3a68c9; --cat-pub-ink:#2f9461; --cat-fin-ink:#b8860b; --cat-sme-ink:#c4577a; --cat-gov-ink:#7a5cc4;
+  --cat-big:#e7effd; --cat-pub:#e3f5ea; --cat-fin:#ffeadb; --cat-sme:#fde8ee; --cat-gov:#eee7fb;
+  --cat-big-ink:#3a68c9; --cat-pub-ink:#2f9461; --cat-fin-ink:#c0662a; --cat-sme-ink:#c4577a; --cat-gov-ink:#7a5cc4;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#12151c; --surface:#1a1f29; --surface-2:#222836; --line:#2f3646;
   --fg:#e8ebf2; --muted:#9aa3b5; --accent:#7ea2ff; --accent-ink:#0d1220; --accent-soft:#25304a;
-  --t-insung:#d3defa; --t-jikmu:#9fb4ee; --t-pt:#6f8bd6; --t-toron:#45599c; --t-etc:#7d8597;
-  --mark:#6b5a12; --danger:#ff7b7b; --cat-big:#1e2a42; --cat-pub:#173229; --cat-fin:#352d18; --cat-sme:#3a1f29; --cat-gov:#2a2340; --cat-big-ink:#8fb0f5; --cat-pub-ink:#74cf9f; --cat-fin-ink:#e2bd5c; --cat-sme-ink:#ee93b0; --cat-gov-ink:#b9a1f0; color-scheme:dark}}
+  --t-insung:#ff8080; --t-jikmu:#d95050; --t-pt:#e0b43a; --t-toron:#b8992e; --t-etc:#7d8597;
+  --mark:#6b5a12; --danger:#ff7b7b; --cat-big:#1e2a42; --cat-pub:#173229; --cat-fin:#3a281c; --cat-sme:#3a1f29; --cat-gov:#2a2340; --cat-big-ink:#8fb0f5; --cat-pub-ink:#74cf9f; --cat-fin-ink:#f0a877; --cat-sme-ink:#ee93b0; --cat-gov-ink:#b9a1f0; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#12151c; --surface:#1a1f29; --surface-2:#222836; --line:#2f3646;
   --fg:#e8ebf2; --muted:#9aa3b5; --accent:#7ea2ff; --accent-ink:#0d1220; --accent-soft:#25304a;
-  --t-insung:#d3defa; --t-jikmu:#9fb4ee; --t-pt:#6f8bd6; --t-toron:#45599c; --t-etc:#7d8597;
-  --mark:#6b5a12; --danger:#ff7b7b; --cat-big:#1e2a42; --cat-pub:#173229; --cat-fin:#352d18; --cat-sme:#3a1f29; --cat-gov:#2a2340; --cat-big-ink:#8fb0f5; --cat-pub-ink:#74cf9f; --cat-fin-ink:#e2bd5c; --cat-sme-ink:#ee93b0; --cat-gov-ink:#b9a1f0; color-scheme:dark}
+  --t-insung:#ff8080; --t-jikmu:#d95050; --t-pt:#e0b43a; --t-toron:#b8992e; --t-etc:#7d8597;
+  --mark:#6b5a12; --danger:#ff7b7b; --cat-big:#1e2a42; --cat-pub:#173229; --cat-fin:#3a281c; --cat-sme:#3a1f29; --cat-gov:#2a2340; --cat-big-ink:#8fb0f5; --cat-pub-ink:#74cf9f; --cat-fin-ink:#f0a877; --cat-sme-ink:#ee93b0; --cat-gov-ink:#b9a1f0; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.55;margin:0}
@@ -649,7 +649,7 @@ async function buildWorkbook(ExcelJS,items){
   items=[...items].sort((a,b)=>a.company.localeCompare(b.company,"ko")||order.indexOf(a.type)-order.indexOf(b.type)||(a.job||"").localeCompare(b.job||"","ko"));
   const wb=new ExcelJS.Workbook();wb.creator="GritMindLab";
   const ACC="FF1F4FBF",HEAD="FF1B2130",SOFT="FFEEF2FB",LINE="FFD5DAE3";
-  const TC={"인성":"FF1F2F5C","직무":"FF3D5A99","PT":"FF6F89C2","토론":"FF8FA3D1","기타":"FF6B7280"};
+  const TC={"인성":"FF9B1C1C","직무":"FFD64545","PT":"FFB8860B","토론":"FFC9A227","기타":"FF808790"};
   const border={top:{style:"thin",color:{argb:LINE}},left:{style:"thin",color:{argb:LINE}},bottom:{style:"thin",color:{argb:LINE}},right:{style:"thin",color:{argb:LINE}}};
   const font="맑은 고딕";
 

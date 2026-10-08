@@ -39,7 +39,7 @@ button{cursor:pointer}
 /* 헤더 */
 header.top{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
 .top-row{display:flex;align-items:center;gap:12px;padding-block:12px;flex-wrap:wrap}
-.brand{display:flex;flex-direction:column;line-height:1.15;margin-right:auto}
+.brand{cursor:pointer;display:flex;flex-direction:column;line-height:1.15;margin-right:auto}
 .brand b{font-family:var(--f-display);font-weight:900;font-size:21px;letter-spacing:-.02em}
 .brand small{color:var(--muted);font-size:11.5px;letter-spacing:.06em}
 .btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 12px;font-size:14px;font-weight:500;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
@@ -120,6 +120,10 @@ section.view{min-width:0}
 .q .adm button:hover{background:var(--surface-2);color:var(--fg)}
 .q .adm button.arm{color:#fff;background:var(--danger)}
 .q.sel{background:var(--accent-soft)}
+.memo-badge{display:inline-block;font-size:11px;font-weight:700;padding:1px 6px;border-radius:4px;background:var(--c);color:var(--surface);margin-right:6px;vertical-align:1px}
+.memo-body{margin-top:6px;padding:10px 12px;background:var(--surface-2);border-radius:8px;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;font-size:14px;line-height:1.65;max-height:9.5em;overflow:hidden;position:relative}
+.memo-body.open{max-height:none}
+.memo-more{border:0;background:none;color:var(--accent);font-size:12.5px;font-weight:600;padding:4px 0 0}
 mark{background:var(--mark);color:inherit;border-radius:2px;padding:0 1px}
 
 /* 검색 결과 리스트 */
@@ -225,6 +229,7 @@ mark{background:var(--mark);color:inherit;border-radius:2px;padding:0 1px}
   <div class="tabs" role="tablist" id="adTabs">
     <button role="tab" aria-selected="true" data-tab="one">직접 입력</button>
     <button role="tab" aria-selected="false" data-tab="bulk">구글독 붙여넣기</button>
+    <button role="tab" aria-selected="false" data-tab="memo">상황·메모 등록</button>
   </div>
   <form class="sheet-b" id="fOne">
     <div class="grid2">
@@ -237,6 +242,20 @@ mark{background:var(--mark);color:inherit;border-radius:2px;padding:0 1px}
     </div>
     <label class="field"><span id="oQLabel">질문 (한 줄에 하나씩, 여러 줄이면 여러 개 등록)</span><textarea id="oQ" required></textarea></label>
     <div class="actions"><button class="btn primary" type="submit" id="oSubmit">등록</button></div>
+  </form>
+  <form class="sheet-b" id="fMemo" hidden>
+    <p class="hint">관찰면접·상황면접·인바스켓처럼 <b>상황 하나를 통째로</b> 올릴 때 쓰세요. 줄바꿈이 그대로 저장되고, 한 건으로 등록됩니다.</p>
+    <div class="grid2">
+      <label class="field"><span>기업 구분</span><select id="mCat"></select></label>
+      <label class="field"><span>기업명</span><input id="mCo" list="coNames" required placeholder="예: 한국수자원공사"></label>
+      <label class="field"><span>면접 유형</span><select id="mType"></select></label>
+      <label class="field"><span>면접 이름</span><input id="mSub" list="memoNames" required placeholder="예: 관찰면접"></label>
+      <label class="field"><span>직무 (비우면 공통)</span><input id="mJob" list="jobNames" placeholder="예: 전기"></label>
+      <label class="field"><span>연도 (선택)</span><input id="mYear" inputmode="numeric" placeholder="2026"></label>
+    </div>
+    <label class="field"><span>제목</span><input id="mTitle" required placeholder="예: 신규 사업 홍보 방안 도출 (조별 과제)"></label>
+    <label class="field"><span>상황·내용</span><textarea id="mBody" style="min-height:240px" placeholder="[상황]&#10;당신은 ○○팀 신입사원이다...&#10;&#10;[과제]&#10;1. ...&#10;2. ...&#10;&#10;[진행 방식]&#10;조별 6명, 준비 10분 + 토의 30분"></textarea></label>
+    <div class="actions"><button class="btn primary" type="submit" id="mSubmit">등록</button></div>
   </form>
   <div class="sheet-b" id="fBulk" hidden>
     <p class="hint">구글독 내용을 그대로 복사해 붙여넣으세요. <code>[한국가스공사 PT면접]</code> 같은 대괄호 제목 줄 아래의 줄들이 각각 하나의 질문으로 등록됩니다. 직무를 나누려면 괄호로 적으세요: <code>[한국가스공사 직무면접(기계)]</code>. 인성·직무·PT·토론이 아닌 제목(예: <code>[한국가스공사 영어면접]</code>)은 <b>기타</b>로 들어가고 '영어면접'이 세부유형이 됩니다.</p>
@@ -271,7 +290,7 @@ mark{background:var(--mark);color:inherit;border-radius:2px;padding:0 1px}
   </form>
 </div></div>
 
-<datalist id="coNames"></datalist><datalist id="jobNames"></datalist>
+<datalist id="coNames"></datalist><datalist id="memoNames"><option value="관찰면접"><option value="상황면접"><option value="인바스켓"><option value="역할연기(RP)"><option value="그룹과제"></datalist><datalist id="jobNames"></datalist>
 
 <script>
 /* ================= 설정 ================= */
@@ -300,7 +319,7 @@ let store;
 
 /* ================= 저장소: 데모(localStorage) ================= */
 function demoStore(){
-  const KEY="ivbank_demo_v2";
+  const KEY="ivbank_demo_v3";
   const seed=()=>{
     const out=[];let i=0;
     const add=(cat,company,type,qs,extra={})=>qs.forEach(q=>out.push({id:"d"+(++i),cat,company,type,question:q,subType:"",year:"",job:"",...extra}));
@@ -308,6 +327,7 @@ function demoStore(){
     add("공기업","한국가스공사","인성",["AI가 등장하면서 엔지니어로 필요한 역할은 무엇인가?","살면서 가장 성취감 있었던 경험은 무엇인가?","본인의 단점은 무엇인가?","마지막으로 할말이 있는가?","본인의 장단점은 무엇이라고 생각하는가?","다른 지원자에 비해 본인이 가지고 있는 특출한 역량은 어떠한 것인가?","우리 기관의 인재상에 본인이 왜 적합하다고 생각하는가?","입사 이후에 어떠한 업무를 담당하고 싶은가?","상사가 윤리의식에 벗어난 업무를 지시한다면 어떻게 대처할 것인가?","상사와 친하게 지내는 본인만의 노하우가 있는가?","대화가 잘 통하지 않는 상대와 친해지기 위해 어떻게 하는가?","규칙을 어긴적이 있거나 어기는 사람을 본적이 있는가?","자신의 소통점수는 100점 만점 중 몇 점이라고 생각하는가?","집단에 속하게 된다면 어떠한 역할을 주로 담당하는가?","조직 내에서 발생한 갈등을 해결하기 위해 노력한 적이 있는가?"]);
     add("공기업","한국가스공사","직무",["(예시) 배관 설비 유지보수 시 가장 중요한 안전 관리 포인트는?"],{job:"기계"});
     add("공기업","한국가스공사","직무",["(예시) 공공기관 예산 집행 과정에서 주의할 점은?"],{job:"사무"});
+    add("공기업","한국가스공사","기타",["(예시) 지역 축제 연계 안전 캠페인 기획"],{kind:"memo",subType:"관찰면접",body:"[상황]\n당신은 ○○지사 홍보팀 신입사원이다. 다음 달 지역 축제에서 가스 안전 캠페인을 진행하게 되었다.\n\n[과제]\n1. 캠페인 목표와 핵심 메시지를 정하시오.\n2. 예산 300만 원 안에서 실행 계획을 세우시오.\n3. 예상 리스크와 대응 방안을 제시하시오.\n\n[진행 방식]\n조별 6명 · 준비 10분 + 토의 30분 · 면접관 3명 관찰"});
     add("대기업","(예시) 대기업A","인성",["1분 자기소개를 해보세요.","가장 힘들었던 팀 프로젝트 경험은?"]);
     add("대기업","(예시) 대기업A","직무",["지원 직무에서 가장 중요한 역량은 무엇이라고 생각하나요?"]);
     add("대기업","(예시) 대기업A","토론",["재택근무 확대, 찬성과 반대 입장에서 토론하시오."]);
@@ -380,7 +400,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelect
 function matchQ(it){
   const terms=S.q.trim().toLowerCase().split(/\s+/).filter(Boolean);
   if(!terms.length) return true;
-  const hay=(it.company+" "+it.question+" "+(it.subType||"")+" "+(it.job||"")+" "+(it.year||"")).toLowerCase();
+  const hay=(it.company+" "+it.question+" "+(it.body||"")+" "+(it.subType||"")+" "+(it.job||"")+" "+(it.year||"")).toLowerCase();
   return terms.every(t=>hay.includes(t));
 }
 const byCat=it=>S.cat==="전체"||it.cat===S.cat;
@@ -419,7 +439,8 @@ function qRow(it){
   const sel=S.sel.has(it.id);
   const meta=[it.subType&&`<span class="st" style="--c:${typeColor(it.type)}">${esc(it.subType)}</span>`,it.year&&`${esc(it.year)}년`,it.job&&esc(it.job)].filter(Boolean).join("<span>·</span>");
   return `<li class="q${sel?" sel":""}"><input type="checkbox" data-sel="${it.id}" ${sel?"checked":""} aria-label="선택">
-    <div class="body"><div class="txt">${hl(it.question)}</div>${meta?`<div class="meta">${meta}</div>`:""}</div>
+    <div class="body"><div class="txt">${it.kind==="memo"?`<span class="memo-badge" style="--c:${typeColor(it.type)}">${esc(it.subType||"상황")}</span><b>${hl(it.question)}</b>`:hl(it.question)}</div>${meta?`<div class="meta">${meta}</div>`:""}
+    ${it.kind==="memo"&&it.body?`<div class="memo-body${S.q.trim()&&matchQ({company:"",question:"",body:it.body})?" open":""}" id="mb-${it.id}">${hl(it.body)}</div><button class="memo-more" data-more="${it.id}">${S.q.trim()&&matchQ({company:"",question:"",body:it.body})?"접기":"전체 보기"}</button>`:""}</div>
     ${S.admin?`<div class="adm"><button data-edit="${it.id}">수정</button><button data-del="${it.id}">삭제</button></div>`:""}</li>`;
 }
 function renderView(){
@@ -478,12 +499,15 @@ function render(){renderFilters();renderCompanyList();renderView();renderSel()}
 /* ================= 이벤트 ================= */
 $("#q").addEventListener("input",e=>{S.q=e.target.value;render()});
 $("#cats").addEventListener("click",e=>{const b=e.target.closest("[data-cat]");if(!b)return;S.cat=b.dataset.cat;
-  if(S.company&&!S.items.some(x=>x.company===S.company&&byCat(x)))S.company=null;render()});
+  S.company=null;S.job=null;render();scrollTo({top:0})});
+$(".brand").addEventListener("click",()=>{S.cat="전체";S.type="전체";S.q="";$("#q").value="";S.company=null;S.job=null;render();scrollTo({top:0})});
 $("#types").addEventListener("click",e=>{const b=e.target.closest("[data-type]");if(!b)return;S.type=b.dataset.type;render()});
 $("#coSelect").addEventListener("change",e=>{S.company=e.target.value||null;S.job=null;render();scrollTo({top:0})});
 document.addEventListener("click",e=>{
   const co=e.target.closest("[data-co]");
   if(co){S.company=co.dataset.co||null;S.job=null;render();scrollTo({top:0});return}
+  const mm=e.target.closest("[data-more]");
+  if(mm){const b=document.getElementById("mb-"+mm.dataset.more);if(b){b.classList.toggle("open");mm.textContent=b.classList.contains("open")?"접기":"전체 보기"}return}
   const jb=e.target.closest("[data-job]");
   if(jb){S.job=jb.dataset.job==="전체"?null:jb.dataset.job;render();return}
   if(e.target.id==="coAllSel"){filtered().filter(x=>x.company===S.company&&byJob(x)).forEach(x=>S.sel.add(x.id));render()}
@@ -515,7 +539,7 @@ function onAuth(u){S.user=u;S.admin=!!u&&(DEMO||ADMIN_EMAILS.includes(u.email));
 
 /* 등록 모달 */
 const opt=(arr,v)=>arr.map(x=>`<option ${x===v?"selected":""}>${x}</option>`).join("");
-function setTab(t){$("#adTabs").querySelectorAll("button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));$("#fOne").hidden=t!=="one";$("#fBulk").hidden=t!=="bulk"}
+function setTab(t){$("#adTabs").querySelectorAll("button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));$("#fOne").hidden=t!=="one";$("#fBulk").hidden=t!=="bulk";$("#fMemo").hidden=t!=="memo"}
 $("#adTabs").onclick=e=>{const b=e.target.closest("[data-tab]");if(b)setTab(b.dataset.tab)};
 $("#btnAdmin").onclick=()=>{
   S.editing=null;$("#adT").textContent="기출 등록";$("#adTabs").hidden=false;setTab("one");
@@ -524,15 +548,32 @@ $("#btnAdmin").onclick=()=>{
   $("#oType").innerHTML=opt(TYPES.map(t=>t.k),S.type!=="전체"?S.type:"인성");
   $("#oCo").value=S.company||"";$("#oSub").value="";$("#oYear").value="";$("#oJob").value=S.job&&S.job!=="공통"?S.job:"";$("#oQ").value="";
   $("#oQLabel").textContent="질문 (한 줄에 하나씩, 여러 줄이면 여러 개 등록)";$("#oSubmit").textContent="등록";
-  $("#bOut").innerHTML="";$("#bSave").disabled=true;open("#mAdmin");
+  $("#bOut").innerHTML="";$("#bSave").disabled=true;
+  $("#mCat").innerHTML=$("#oCat").innerHTML;$("#mType").innerHTML=opt(TYPES.map(t=>t.k),"기타");
+  $("#mCo").value=S.company||"";$("#mSub").value="";$("#mJob").value=S.job&&S.job!=="공통"?S.job:"";$("#mYear").value="";$("#mTitle").value="";$("#mBody").value="";$("#mSubmit").textContent="등록";
+  open("#mAdmin");
 };
 function openEdit(id){
   const it=S.items.find(x=>x.id===id);if(!it)return;S.editing=id;
-  $("#adT").textContent="기출 수정";$("#adTabs").hidden=true;setTab("one");
+  $("#adT").textContent="기출 수정";$("#adTabs").hidden=true;
+  if(it.kind==="memo"){setTab("memo");
+    $("#mCat").innerHTML=opt(CATS,it.cat);$("#mType").innerHTML=opt(TYPES.map(t=>t.k),it.type);
+    $("#mCo").value=it.company;$("#mSub").value=it.subType||"";$("#mJob").value=it.job||"";$("#mYear").value=it.year||"";$("#mTitle").value=it.question;$("#mBody").value=it.body||"";
+    $("#mSubmit").textContent="저장";open("#mAdmin");return}
+  setTab("one");
   $("#oCat").innerHTML=opt(CATS,it.cat);$("#oType").innerHTML=opt(TYPES.map(t=>t.k),it.type);
   $("#oCo").value=it.company;$("#oSub").value=it.subType||"";$("#oYear").value=it.year||"";$("#oJob").value=it.job||"";$("#oQ").value=it.question;
   $("#oQLabel").textContent="질문";$("#oSubmit").textContent="저장";open("#mAdmin");
 }
+$("#fMemo").addEventListener("submit",async e=>{e.preventDefault();
+  const d={kind:"memo",cat:$("#mCat").value,company:$("#mCo").value.trim(),type:$("#mType").value,subType:$("#mSub").value.trim(),job:$("#mJob").value.trim(),year:$("#mYear").value.trim(),question:$("#mTitle").value.trim(),body:$("#mBody").value.replace(/\s+$/,"")};
+  if(!d.company||!d.question)return toast("기업명과 제목을 입력하세요");
+  if(!d.body.trim())return toast("상황·내용을 입력하세요");
+  try{
+    if(S.editing){await store.update(S.editing,d);toast("저장했습니다");$("#mAdmin").hidden=true;return}
+    await store.addMany([d]);toast(`'${d.subType}' 1건 등록했습니다`);$("#mTitle").value="";$("#mBody").value="";S.company=d.company;render();
+  }catch(err){toast("저장 실패: "+err.message)}
+});
 $("#fOne").addEventListener("submit",async e=>{e.preventDefault();
   const base={cat:$("#oCat").value,company:$("#oCo").value.trim(),type:$("#oType").value,subType:$("#oSub").value.trim(),year:$("#oYear").value.trim(),job:$("#oJob").value.trim()};
   if(!base.company)return toast("기업명을 입력하세요");
@@ -647,11 +688,11 @@ async function buildWorkbook(ExcelJS,items){
   hr.height=32;
   items.forEach((it,i)=>{
     const r=5+i,row=ws.getRow(r);
-    const qtext=it.question+(it.subType?`  [${it.subType}]`:"");
+    const qtext=it.kind==="memo"?`[${it.subType||"상황"}] ${it.question}\n\n${it.body||""}`:it.question+(it.subType?`  [${it.subType}]`:"");
     row.values=[i+1,it.company+(it.job?`\n(${it.job})`:""),it.type,qtext,GUIDE[it.type]||GUIDE["기타"],"","","",
       {formula:`IF(F${r}="","",LEN(F${r}))`},
       {formula:`IF(F${r}="","",ROUND(LEN(SUBSTITUTE(F${r}," ",""))/5.5,0))`},"","","","",""];
-    row.height=it.type==="PT"||it.type==="토론"?170:120;
+    row.height=it.kind==="memo"?Math.min(409,Math.max(170,((it.body||"").split("\n").length+3)*15)):(it.type==="PT"||it.type==="토론"?170:120);
     row.eachCell({includeEmpty:true},(c,n)=>{if(n>15)return;c.border=border;c.font={name:font,size:10};c.alignment={vertical:"top",wrapText:true}});
     row.getCell(1).alignment={vertical:"top",horizontal:"center"};
     row.getCell(3).font={name:font,size:10,bold:true,color:{argb:TC[it.type]||TC["기타"]}};

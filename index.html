@@ -8,8 +8,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Gothic+A1:wght@800;900&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <style>
-[hidden]{display:none!important}
-  /* 레이아웃: 상단 검색바 + 좌측 기업목록 + 우측 한눈에 보기 보드(유형별 5열) */
+/* 레이아웃: 상단 검색바 + 좌측 기업목록 + 우측 한눈에 보기 보드(유형별 5열) */
 :root{
   --bg:#f5f6f8; --surface:#ffffff; --surface-2:#eef0f4; --line:#dde1e8;
   --fg:#1b2130; --muted:#5f6878; --accent:#1f4fbf; --accent-ink:#ffffff; --accent-soft:#e3eafb;
@@ -30,6 +29,7 @@
   --t-insung:#4cc893; --t-jikmu:#6f9bff; --t-pt:#f09a57; --t-toron:#b58cf0; --t-etc:#9aa3b5;
   --mark:#6b5a12; --danger:#ff7b7b; color-scheme:dark}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.55;margin:0}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
@@ -259,6 +259,14 @@ mark{background:var(--mark);color:inherit;border-radius:2px;padding:0 1px}
     <label class="field"><span>기업명</span><input id="cName" required></label>
     <label class="field"><span>기업 구분</span><select id="cCat"></select></label>
     <p class="hint">이 기업의 모든 기출에 한꺼번에 반영됩니다.</p>
+    <div id="cJobWrap" style="display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line);padding-top:14px">
+      <b style="font-size:14px">직무 이름 바꾸기</b>
+      <div class="grid2">
+        <label class="field"><span>바꿀 직무</span><select id="cJobFrom"></select></label>
+        <label class="field"><span>새 이름 (비우면 공통)</span><input id="cJobTo" list="jobNames" placeholder="예: 전기"></label>
+      </div>
+      <p class="hint">해당 직무로 등록된 질문 전체의 직무명이 바뀝니다.</p>
+    </div>
     <div class="actions"><button class="btn primary" type="submit">저장</button></div>
   </form>
 </div></div>
@@ -588,10 +596,18 @@ $("#bSave").onclick=async()=>{
 };
 
 /* 기업 정보 수정 */
-function openCoEdit(){const it=S.items.find(x=>x.company===S.company);$("#cName").value=S.company;$("#cCat").innerHTML=opt(CATS,it?it.cat:"공기업");open("#mCo")}
+function openCoEdit(){const it=S.items.find(x=>x.company===S.company);$("#cName").value=S.company;$("#cCat").innerHTML=opt(CATS,it?it.cat:"공기업");
+  const jobs=[...new Set(S.items.filter(x=>x.company===S.company&&x.job).map(x=>x.job))].sort(ko);
+  $("#cJobWrap").hidden=!jobs.length;
+  $("#cJobFrom").innerHTML=`<option value="">(바꾸지 않음)</option>`+jobs.map(j=>{const n=S.items.filter(x=>x.company===S.company&&x.job===j).length;return `<option value="${esc(j)}" ${S.job===j?"selected":""}>${esc(j)} (${n}개)</option>`}).join("");
+  $("#cJobTo").value="";open("#mCo")}
 $("#fCo").addEventListener("submit",async e=>{e.preventDefault();
-  const ids=S.items.filter(x=>x.company===S.company).map(x=>x.id),name=$("#cName").value.trim();
-  try{await store.updateMany(ids,{company:name,cat:$("#cCat").value});S.company=name;$("#mCo").hidden=true;toast("기업 정보를 바꿨습니다")}
+  const mine=S.items.filter(x=>x.company===S.company),ids=mine.map(x=>x.id),name=$("#cName").value.trim();
+  const from=$("#cJobFrom").value,to=$("#cJobTo").value.trim();
+  try{
+    await store.updateMany(ids,{company:name,cat:$("#cCat").value});
+    if(from&&from!==to){await store.updateMany(mine.filter(x=>x.job===from).map(x=>x.id),{job:to});if(S.job===from)S.job=to||null}
+    S.company=name;$("#mCo").hidden=true;toast(from&&from!==to?`직무 '${from}' → '${to||"공통"}'로 바꿨습니다`:"기업 정보를 바꿨습니다")}
   catch(err){toast("저장 실패: "+err.message)}});
 
 /*XLSX-START*/

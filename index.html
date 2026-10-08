@@ -12,7 +12,7 @@
 :root{
   --bg:#f5f6f8; --surface:#ffffff; --surface-2:#eef0f4; --line:#dde1e8;
   --fg:#1b2130; --muted:#5f6878; --accent:#1f4fbf; --accent-ink:#ffffff; --accent-soft:#e3eafb;
-  --t-insung:#1d8a5b; --t-jikmu:#2860c9; --t-pt:#c8641c; --t-toron:#7b47b8; --t-etc:#6b7280;
+  --t-insung:#1f2f5c; --t-jikmu:#3d5a99; --t-pt:#6f89c2; --t-toron:#a3b4dc; --t-etc:#9097a3;
   --mark:#ffe58a; --danger:#c53030;
   --f-display:"Gothic A1","IBM Plex Sans KR",system-ui,sans-serif;
   --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
@@ -23,12 +23,12 @@
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#12151c; --surface:#1a1f29; --surface-2:#222836; --line:#2f3646;
   --fg:#e8ebf2; --muted:#9aa3b5; --accent:#7ea2ff; --accent-ink:#0d1220; --accent-soft:#25304a;
-  --t-insung:#4cc893; --t-jikmu:#6f9bff; --t-pt:#f09a57; --t-toron:#b58cf0; --t-etc:#9aa3b5;
+  --t-insung:#d3defa; --t-jikmu:#9fb4ee; --t-pt:#6f8bd6; --t-toron:#45599c; --t-etc:#7d8597;
   --mark:#6b5a12; --danger:#ff7b7b; --cat-big:#1e2a42; --cat-pub:#173229; --cat-fin:#352d18; --cat-sme:#3a1f29; --cat-gov:#2a2340; --cat-big-ink:#8fb0f5; --cat-pub-ink:#74cf9f; --cat-fin-ink:#e2bd5c; --cat-sme-ink:#ee93b0; --cat-gov-ink:#b9a1f0; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#12151c; --surface:#1a1f29; --surface-2:#222836; --line:#2f3646;
   --fg:#e8ebf2; --muted:#9aa3b5; --accent:#7ea2ff; --accent-ink:#0d1220; --accent-soft:#25304a;
-  --t-insung:#4cc893; --t-jikmu:#6f9bff; --t-pt:#f09a57; --t-toron:#b58cf0; --t-etc:#9aa3b5;
+  --t-insung:#d3defa; --t-jikmu:#9fb4ee; --t-pt:#6f8bd6; --t-toron:#45599c; --t-etc:#7d8597;
   --mark:#6b5a12; --danger:#ff7b7b; --cat-big:#1e2a42; --cat-pub:#173229; --cat-fin:#352d18; --cat-sme:#3a1f29; --cat-gov:#2a2340; --cat-big-ink:#8fb0f5; --cat-pub-ink:#74cf9f; --cat-fin-ink:#e2bd5c; --cat-sme-ink:#ee93b0; --cat-gov-ink:#b9a1f0; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -649,7 +649,7 @@ async function buildWorkbook(ExcelJS,items){
   items=[...items].sort((a,b)=>a.company.localeCompare(b.company,"ko")||order.indexOf(a.type)-order.indexOf(b.type)||(a.job||"").localeCompare(b.job||"","ko"));
   const wb=new ExcelJS.Workbook();wb.creator="GritMindLab";
   const ACC="FF1F4FBF",HEAD="FF1B2130",SOFT="FFEEF2FB",LINE="FFD5DAE3";
-  const TC={"인성":"FF1D8A5B","직무":"FF2860C9","PT":"FFC8641C","토론":"FF7B47B8","기타":"FF6B7280"};
+  const TC={"인성":"FF1F2F5C","직무":"FF3D5A99","PT":"FF6F89C2","토론":"FF8FA3D1","기타":"FF6B7280"};
   const border={top:{style:"thin",color:{argb:LINE}},left:{style:"thin",color:{argb:LINE}},bottom:{style:"thin",color:{argb:LINE}},right:{style:"thin",color:{argb:LINE}}};
   const font="맑은 고딕";
 

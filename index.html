@@ -209,7 +209,7 @@ mark{background:var(--mark);color:inherit;border-radius:2px;padding:0 1px}
   <div class="wrap">
     <div class="top-row">
       <div class="brand"><b>그릿마인드랩 면접 아카이브</b><small>GRITMINDLAB INTERVIEW ARCHIVE</small></div>
-      <button class="btn" id="btnAll" title="현재 검색 결과 전체를 엑셀로">결과 전체 엑셀</button>
+      <button class="btn" id="btnAll" title="현재 검색 결과 전체를 엑셀로" hidden>결과 전체 엑셀</button>
       <button class="btn" id="btnAdmin" hidden>기출 등록</button>
       <button class="btn" id="btnCode" hidden>입장코드 설정</button>
       <button class="btn ghost" id="btnLogin">관리자 로그인</button>
@@ -575,7 +575,7 @@ document.addEventListener("change",e=>{
 });
 $("#selClear").onclick=()=>{S.sel.clear();render()};
 $("#selDown").onclick=()=>download(S.items.filter(x=>S.sel.has(x.id)));
-$("#btnAll").onclick=()=>{const l=S.company?filtered().filter(x=>x.company===S.company&&byJob(x)):filtered();if(!l.length)return toast("다운로드할 기출이 없습니다");download(l)};
+$("#btnAll").onclick=()=>{if(!S.admin)return;const l=S.company?filtered().filter(x=>x.company===S.company&&byJob(x)):filtered();if(!l.length)return toast("다운로드할 기출이 없습니다");download(l)};
 
 /* 로그인 */
 $("#btnLogin").onclick=()=>{if(S.admin){store.logout();return}$("#lgMsg").textContent=DEMO?"데모 모드: 아무 값이나 입력하면 관리자로 들어갑니다.":"";open("#mLogin")};
@@ -594,7 +594,7 @@ function startListen(){
 }
 function onAuth(u){S.user=u;S.admin=!!u&&!u.isAnonymous&&(DEMO||ADMIN_EMAILS.includes(u.email));
   const isAdminUser=S.admin, isMember=!!u&&!S.admin;
-  $("#btnLogin").textContent=isAdminUser?"로그아웃":"관리자 로그인";$("#btnAdmin").hidden=!isAdminUser;$("#btnCode").hidden=!isAdminUser;
+  $("#btnLogin").textContent=isAdminUser?"로그아웃":"관리자 로그인";$("#btnAdmin").hidden=!isAdminUser;$("#btnCode").hidden=!isAdminUser;$("#btnAll").hidden=!isAdminUser;
   if(u&&!u.isAnonymous&&!S.admin){toast("관리자 권한이 없는 계정입니다");store.logout();return}
   if(isAdminUser||isMember)startListen();else{gen++;if(unsub){unsub();unsub=null}showGate()}
   render()}

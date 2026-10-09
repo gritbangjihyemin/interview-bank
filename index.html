@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>기업별 면접 기출</title>
+<title>그릿마인드랩 면접 아카이브</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Gothic+A1:wght@800;900&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
@@ -180,6 +180,18 @@ mark{background:var(--mark);color:inherit;border-radius:2px;padding:0 1px}
 .actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
 .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:10px;z-index:60;font-size:14px;max-width:calc(100% - 32px)}
 
+/* 입장 화면 */
+.gate{position:fixed;inset:0;z-index:45;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px 16px;overflow:auto}
+.gate-card{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:32px 28px 24px;display:flex;flex-direction:column;gap:18px;box-shadow:0 10px 30px rgba(20,25,40,.06)}
+.gate-card .eyebrow{font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--muted)}
+.gate-card h1{margin:4px 0 0;font-family:var(--f-display);font-weight:900;font-size:25px;letter-spacing:-.02em;line-height:1.3;text-wrap:balance}
+.gate-card input{width:100%;border:1.5px solid var(--line);background:var(--bg);border-radius:10px;padding:12px 14px;font-size:18px;letter-spacing:.12em;text-align:center}
+.gate-card input:focus{outline:none;border-color:var(--accent);background:var(--surface)}
+.gate-card .btn.primary{justify-content:center;padding:11px;font-size:15.5px}
+.gate-msg{min-height:1.4em;margin:0;font-size:13.5px;color:var(--danger);text-align:center}
+.gate-foot{display:flex;justify-content:center}
+.gate-foot button{border:0;background:none;color:var(--muted);font-size:13px;text-decoration:underline;text-underline-offset:3px}
+.code-now{font-size:22px;font-weight:700;letter-spacing:.12em;text-align:center;padding:10px;border-radius:10px;background:var(--surface-2)}
 @media (max-width:860px){
   main.layout{grid-template-columns:minmax(0,1fr)}
   aside.companies{display:none}
@@ -196,9 +208,10 @@ mark{background:var(--mark);color:inherit;border-radius:2px;padding:0 1px}
   <div id="demoNote" class="demo-note" hidden><div class="wrap">데모 모드입니다. 예시 데이터는 이 브라우저에만 저장됩니다. Firebase 설정을 넣으면 실제 DB로 연결됩니다.</div></div>
   <div class="wrap">
     <div class="top-row">
-      <div class="brand"><b>기업별 면접 기출</b><small>GRITMINDLAB · 인성 · 직무 · PT · 토론</small></div>
+      <div class="brand"><b>그릿마인드랩 면접 아카이브</b><small>GRITMINDLAB INTERVIEW ARCHIVE</small></div>
       <button class="btn" id="btnAll" title="현재 검색 결과 전체를 엑셀로">결과 전체 엑셀</button>
       <button class="btn" id="btnAdmin" hidden>기출 등록</button>
+      <button class="btn" id="btnCode" hidden>입장코드 설정</button>
       <button class="btn ghost" id="btnLogin">관리자 로그인</button>
     </div>
     <div class="search">
@@ -291,6 +304,26 @@ mark{background:var(--mark);color:inherit;border-radius:2px;padding:0 1px}
   </form>
 </div></div>
 
+<div class="gate" id="gate" hidden>
+  <form class="gate-card" id="fGate">
+    <div><div class="eyebrow">GRITMINDLAB INTERVIEW ARCHIVE</div><h1>그릿마인드랩<br>면접 아카이브</h1></div>
+    <label class="field"><span>입장코드</span><input id="gCode" type="password" autocomplete="off" required placeholder="코드를 입력하세요"></label>
+    <p class="gate-msg" id="gMsg" role="alert"></p>
+    <button class="btn primary" type="submit" id="gBtn">입장</button>
+    <div class="gate-foot"><button type="button" id="gAdmin">관리자 로그인</button></div>
+  </form>
+</div>
+
+<div class="modal" id="mCode" hidden><div class="sheet sm" role="dialog" aria-labelledby="cdT">
+  <div class="sheet-h"><h2 id="cdT">입장코드 설정</h2><button class="btn ghost" data-close>닫기</button></div>
+  <form class="sheet-b" id="fCode">
+    <div class="field"><span>현재 입장코드</span><div class="code-now" id="cdNow">-</div></div>
+    <label class="field"><span>새 입장코드</span><input id="cdNew" required minlength="4" maxlength="40" autocomplete="off" placeholder="4자 이상 (예: grit2026)"></label>
+    <p class="hint">코드를 바꾸면 이미 들어와 있던 사람도 다음 접속 때 새 코드를 입력해야 합니다. 슬래시(/)는 쓸 수 없어요.</p>
+    <div class="actions"><button class="btn primary" type="submit">저장</button></div>
+  </form>
+</div></div>
+
 <datalist id="coNames"></datalist><datalist id="memoNames"><option value="관찰면접"><option value="상황면접"><option value="인바스켓"><option value="역할연기(RP)"><option value="그룹과제"></datalist><datalist id="jobNames"></datalist>
 
 <script>
@@ -343,13 +376,19 @@ function demoStore(){
   let cb=()=>{}, authCb=()=>{};
   const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){} cb(data.slice())};
   return {
-    start(onData,onAuth){cb=onData;authCb=onAuth;cb(data.slice());authCb(null)},
+    start(onAuth){authCb=onAuth;let ok=false;try{ok=sessionStorage.getItem("ivbank_in")==="1"}catch(e){}authCb(ok?{isAnonymous:true}:null)},
+    listen(onData){cb=onData;cb(data.slice());return()=>{cb=()=>{}}},
+    async enter(code){let c="1234";try{c=localStorage.getItem("ivbank_code")||"1234"}catch(e){}
+      if(code!==c){const e=new Error("bad code");e.code="permission-denied";throw e}
+      try{sessionStorage.setItem("ivbank_in","1")}catch(e){}},
+    async getCodes(){try{return[localStorage.getItem("ivbank_code")||"1234"]}catch(e){return["1234"]}},
+    async setCode(c){try{localStorage.setItem("ivbank_code",c)}catch(e){}},
     async addMany(list){list.forEach(x=>data.push({...x,id:"d"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}));save()},
     async update(id,patch){const it=data.find(x=>x.id===id);if(it)Object.assign(it,patch);save()},
     async updateMany(ids,patch){ids.forEach(id=>{const it=data.find(x=>x.id===id);if(it)Object.assign(it,patch)});save()},
     async remove(id){data=data.filter(x=>x.id!==id);save()},
     async login(email){authCb({email:ADMIN_EMAILS[0]||email})},
-    async logout(){authCb(null)}
+    async logout(){try{sessionStorage.removeItem("ivbank_in")}catch(e){}authCb(null)}
   };
 }
 
@@ -360,9 +399,16 @@ async function firebaseStore(){
   const app=initializeApp(FIREBASE_CONFIG), db=fs.getFirestore(app), auth=au.getAuth(app);
   const col=fs.collection(db,"questions");
   return {
-    start(onData,onAuth){
-      fs.onSnapshot(col,snap=>onData(snap.docs.map(d=>({id:d.id,...d.data()}))),err=>toast("불러오기 실패: "+err.message));
-      au.onAuthStateChanged(auth,u=>onAuth(u));
+    start(onAuth){au.onAuthStateChanged(auth,u=>onAuth(u))},
+    listen(onData,onErr){return fs.onSnapshot(col,snap=>onData(snap.docs.map(d=>({id:d.id,...d.data()}))),err=>onErr&&onErr(err))},
+    async enter(code){
+      if(!auth.currentUser||!auth.currentUser.isAnonymous) await au.signInAnonymously(auth);
+      await fs.setDoc(fs.doc(db,"members",auth.currentUser.uid),{code,at:fs.serverTimestamp()});
+    },
+    async getCodes(){const snap=await fs.getDocs(fs.collection(db,"codes"));return snap.docs.map(d=>d.id)},
+    async setCode(code){
+      const snap=await fs.getDocs(fs.collection(db,"codes"));const b=fs.writeBatch(db);
+      snap.docs.forEach(d=>{if(d.id!==code)b.delete(d.ref)});b.set(fs.doc(db,"codes",code),{at:fs.serverTimestamp()});await b.commit();
     },
     async addMany(list){
       for(let i=0;i<list.length;i+=400){
@@ -532,13 +578,40 @@ $("#selDown").onclick=()=>download(S.items.filter(x=>S.sel.has(x.id)));
 $("#btnAll").onclick=()=>{const l=S.company?filtered().filter(x=>x.company===S.company&&byJob(x)):filtered();if(!l.length)return toast("다운로드할 기출이 없습니다");download(l)};
 
 /* 로그인 */
-$("#btnLogin").onclick=()=>{if(S.user){store.logout();return}$("#lgMsg").textContent=DEMO?"데모 모드: 아무 값이나 입력하면 관리자로 들어갑니다.":"";open("#mLogin")};
+$("#btnLogin").onclick=()=>{if(S.admin){store.logout();return}$("#lgMsg").textContent=DEMO?"데모 모드: 아무 값이나 입력하면 관리자로 들어갑니다.":"";open("#mLogin")};
 $("#fLogin").addEventListener("submit",async e=>{e.preventDefault();$("#lgMsg").textContent="로그인 중…";
   try{await store.login($("#lgEmail").value.trim(),$("#lgPw").value);$("#mLogin").hidden=true}
   catch(err){$("#lgMsg").textContent="로그인하지 못했습니다. 이메일과 비밀번호를 확인하세요. ("+err.code+")"}});
-function onAuth(u){S.user=u;S.admin=!!u&&(DEMO||ADMIN_EMAILS.includes(u.email));
-  $("#btnLogin").textContent=u?"로그아웃":"관리자 로그인";$("#btnAdmin").hidden=!S.admin;
-  if(u&&!S.admin)toast("관리자 권한이 없는 계정입니다");render()}
+let unsub=null,gen=0;
+function setItems(items){S.items=items.map(x=>({cat:"공기업",type:"인성",subType:"",year:"",job:"",...x}));
+  const ids=new Set(S.items.map(x=>x.id));S.sel.forEach(id=>{if(!ids.has(id))S.sel.delete(id)});render()}
+function showGate(msg){$("#gate").hidden=false;$("#gMsg").textContent=msg||"";S.items=[];render();setTimeout(()=>$("#gCode").focus(),50)}
+function hideGate(){$("#gate").hidden=true;$("#gCode").value="";$("#gMsg").textContent=""}
+function startListen(){
+  const my=++gen;if(unsub){unsub();unsub=null}
+  unsub=store.listen(items=>{if(my!==gen)return;hideGate();setItems(items)},
+    err=>{if(my!==gen)return;if(err.code==="permission-denied")showGate(S.user&&S.user.isAnonymous&&S.wasIn?"입장코드가 바뀌었어요. 새 코드를 입력하세요.":"");else toast("불러오기 실패: "+err.message)});
+}
+function onAuth(u){S.user=u;S.admin=!!u&&!u.isAnonymous&&(DEMO||ADMIN_EMAILS.includes(u.email));
+  const isAdminUser=S.admin, isMember=!!u&&!S.admin;
+  $("#btnLogin").textContent=isAdminUser?"로그아웃":"관리자 로그인";$("#btnAdmin").hidden=!isAdminUser;$("#btnCode").hidden=!isAdminUser;
+  if(u&&!u.isAnonymous&&!S.admin){toast("관리자 권한이 없는 계정입니다");store.logout();return}
+  if(isAdminUser||isMember)startListen();else{gen++;if(unsub){unsub();unsub=null}showGate()}
+  render()}
+$("#fGate").addEventListener("submit",async e=>{e.preventDefault();
+  const code=$("#gCode").value.trim();if(!code)return;
+  if(code.includes("/")){$("#gMsg").textContent="입장코드가 맞지 않습니다.";return}
+  $("#gBtn").disabled=true;$("#gMsg").textContent="";
+  try{await store.enter(code);S.wasIn=true;if(DEMO)onAuth({isAnonymous:true});else startListen()}
+  catch(err){$("#gMsg").textContent=err.code==="permission-denied"?"입장코드가 맞지 않습니다.":"입장하지 못했습니다. 잠시 후 다시 시도하세요. ("+(err.code||err.message)+")"}
+  finally{$("#gBtn").disabled=false}});
+$("#gAdmin").onclick=()=>{$("#lgMsg").textContent=DEMO?"데모 모드: 아무 값이나 입력하면 관리자로 들어갑니다. (데모 입장코드: 1234)":"";open("#mLogin")};
+$("#btnCode").onclick=async()=>{$("#cdNow").textContent="불러오는 중…";$("#cdNew").value="";open("#mCode");
+  try{const c=await store.getCodes();$("#cdNow").textContent=c.length?c.join(", "):"아직 설정 안 됨"}catch(err){$("#cdNow").textContent="불러오기 실패"}};
+$("#fCode").addEventListener("submit",async e=>{e.preventDefault();const c=$("#cdNew").value.trim();
+  if(c.length<4)return toast("4자 이상 입력하세요");if(c.includes("/")||c==="."||c==="..")return toast("슬래시(/)는 쓸 수 없어요");
+  try{await store.setCode(c);$("#cdNow").textContent=c;$("#cdNew").value="";toast("입장코드를 바꿨습니다");$("#mCode").hidden=true}
+  catch(err){toast("저장 실패: "+err.message)}});
 
 /* 등록 모달 */
 const opt=(arr,v)=>arr.map(x=>`<option ${x===v?"selected":""}>${x}</option>`).join("");
@@ -757,8 +830,7 @@ async function download(items){
   $("#demoNote").hidden=!DEMO;
   try{store=DEMO?demoStore():await firebaseStore()}
   catch(err){toast("Firebase 연결 실패: "+err.message);store=demoStore()}
-  store.start(items=>{S.items=items.map(x=>({cat:"공기업",type:"인성",subType:"",year:"",job:"",...x}));
-    const ids=new Set(S.items.map(x=>x.id));S.sel.forEach(id=>{if(!ids.has(id))S.sel.delete(id)});render()},onAuth);
+  store.start(onAuth);
 })();
 </script>
 </body>

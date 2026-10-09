@@ -505,12 +505,12 @@ function renderView(){
     v.innerHTML=`<div class="view-head"><h1>${esc(S.company)} <span class="badge cat-b" style="${catVars(meta?meta.cat:"")}">${esc(meta?meta.cat:"")}</span></h1>
       <span class="sum">${TYPES.map(t=>`${t.k} ${all.filter(x=>x.type===t.k).length}`).join(" · ")}</span>
       ${S.admin?`<button class="btn" id="coEdit">기업 정보 수정</button>`:""}
-      <button class="btn" id="coAllSel">이 기업 전체 선택</button></div>${jobBar}
+      ${S.admin?`<button class="btn" id="coAllSel">이 기업 전체 선택</button>`:""}</div>${jobBar}
       <div class="board">${types.map(t=>{
         const qs=all.filter(x=>x.type===t.k).sort((a,b)=>ko(a.subType||"",b.subType||""));
         const allSel=qs.length&&qs.every(x=>S.sel.has(x.id));
         return `<div class="col" style="--c:var(${t.c})"><div class="col-h"><b>${t.k}</b>${t.k==="직무"&&S.job&&S.job!=="공통"?`<span class="jtag">${esc(S.job)}</span>`:""}<span class="n">${qs.length}</span>
-          ${qs.length?`<label><input type="checkbox" data-selcol="${t.k}" ${allSel?"checked":""}>전체</label>`:""}</div>
+          ${qs.length&&S.admin?`<label><input type="checkbox" data-selcol="${t.k}" ${allSel?"checked":""}>전체</label>`:""}</div>
           ${qs.length?`<ol>${groupByJob(qs)}</ol>`:`<div class="none">등록된 ${t.k} 기출이 없습니다.</div>`}</div>`}).join("")}</div>`;
     return;
   }
@@ -527,7 +527,7 @@ function renderView(){
     return;
   }
   const cos=companies(list);
-  v.innerHTML=`<div class="view-head"><h1>검색 결과</h1><span class="sum">${cos.length}개 기업 · ${list.length}개 질문</span>${list.length?`<button class="btn" id="resAllSel">결과 전체 선택</button>`:""}</div>`+
+  v.innerHTML=`<div class="view-head"><h1>검색 결과</h1><span class="sum">${cos.length}개 기업 · ${list.length}개 질문</span>${list.length&&S.admin?`<button class="btn" id="resAllSel">결과 전체 선택</button>`:""}</div>`+
     (cos.length?cos.map(c=>`<div class="group"><div class="group-h"><button class="link" data-co="${esc(c.name)}">${esc(c.name)}</button><span class="badge cat-b" style="${catVars(c.cat)}">${c.cat}</span>
       ${TYPES.map(t=>{const k=c.items.filter(x=>x.type===t.k).length;return k?`<span class="tag" style="--c:var(${t.c})">${t.k} ${k}</span>`:""}).join("")}</div>
       <ol style="list-style:none;margin:0;padding:0">${c.items.sort((a,b)=>TYPES.findIndex(t=>t.k===a.type)-TYPES.findIndex(t=>t.k===b.type)).map(it=>qRow(it).replace('<div class="body">',`<div class="body"><span class="tag" style="--c:${typeColor(it.type)};margin-right:6px">${it.type}</span>`)).join("")}</ol></div>`).join("")
@@ -559,8 +559,8 @@ document.addEventListener("click",e=>{
   if(mm){const b=document.getElementById("mb-"+mm.dataset.more);if(b){b.classList.toggle("open");mm.textContent=b.classList.contains("open")?"접기":"전체 보기"}return}
   const jb=e.target.closest("[data-job]");
   if(jb){S.job=jb.dataset.job==="전체"?null:jb.dataset.job;render();return}
-  if(e.target.id==="coAllSel"){filtered().filter(x=>x.company===S.company&&byJob(x)).forEach(x=>S.sel.add(x.id));render()}
-  if(e.target.id==="resAllSel"){filtered().forEach(x=>S.sel.add(x.id));render()}
+  if(e.target.id==="coAllSel"&&S.admin){filtered().filter(x=>x.company===S.company&&byJob(x)).forEach(x=>S.sel.add(x.id));render()}
+  if(e.target.id==="resAllSel"&&S.admin){filtered().forEach(x=>S.sel.add(x.id));render()}
   if(e.target.id==="coEdit")openCoEdit();
   const ed=e.target.closest("[data-edit]"); if(ed)openEdit(ed.dataset.edit);
   const del=e.target.closest("[data-del]");
@@ -571,7 +571,7 @@ document.addEventListener("click",e=>{
 });
 document.addEventListener("change",e=>{
   if(e.target.dataset.sel){const id=e.target.dataset.sel;e.target.checked?S.sel.add(id):S.sel.delete(id);e.target.closest(".q").classList.toggle("sel",e.target.checked);renderSel()}
-  if(e.target.dataset.selcol){const qs=filtered().filter(x=>x.company===S.company&&byJob(x)&&x.type===e.target.dataset.selcol);qs.forEach(x=>e.target.checked?S.sel.add(x.id):S.sel.delete(x.id));render()}
+  if(e.target.dataset.selcol&&S.admin){const qs=filtered().filter(x=>x.company===S.company&&byJob(x)&&x.type===e.target.dataset.selcol);qs.forEach(x=>e.target.checked?S.sel.add(x.id):S.sel.delete(x.id));render()}
 });
 $("#selClear").onclick=()=>{S.sel.clear();render()};
 $("#selDown").onclick=()=>download(S.items.filter(x=>S.sel.has(x.id)));

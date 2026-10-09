@@ -402,7 +402,7 @@ async function firebaseStore(){
     start(onAuth){au.onAuthStateChanged(auth,u=>onAuth(u))},
     listen(onData,onErr){return fs.onSnapshot(col,snap=>onData(snap.docs.map(d=>({id:d.id,...d.data()}))),err=>onErr&&onErr(err))},
     async enter(code){
-      if(!auth.currentUser||!auth.currentUser.isAnonymous) await au.signInAnonymously(auth);
+      if(!auth.currentUser||!auth.currentUser.isAnonymous){await au.setPersistence(auth,au.browserSessionPersistence);await au.signInAnonymously(auth)}
       await fs.setDoc(fs.doc(db,"members",auth.currentUser.uid),{code,at:fs.serverTimestamp()});
     },
     async getCodes(){const snap=await fs.getDocs(fs.collection(db,"codes"));return snap.docs.map(d=>d.id)},
@@ -422,7 +422,7 @@ async function firebaseStore(){
       for(let i=0;i<ids.length;i+=400){const b=fs.writeBatch(db);ids.slice(i,i+400).forEach(id=>b.update(fs.doc(db,"questions",id),patch));await b.commit()}
     },
     async remove(id){await fs.deleteDoc(fs.doc(db,"questions",id))},
-    async login(email,pw){await au.signInWithEmailAndPassword(auth,email,pw)},
+    async login(email,pw){await au.setPersistence(auth,au.browserLocalPersistence);await au.signInWithEmailAndPassword(auth,email,pw)},
     async logout(){await au.signOut(auth)}
   };
 }
@@ -592,7 +592,11 @@ function startListen(){
   unsub=store.listen(items=>{if(my!==gen)return;hideGate();setItems(items)},
     err=>{if(my!==gen)return;if(err.code==="permission-denied")showGate(S.user&&S.user.isAnonymous&&S.wasIn?"입장코드가 바뀌었어요. 새 코드를 입력하세요.":"");else toast("불러오기 실패: "+err.message)});
 }
-function onAuth(u){S.user=u;S.admin=!!u&&!u.isAnonymous&&(DEMO||ADMIN_EMAILS.includes(u.email));
+const SESS="ivbank_sess";
+const sessOk=()=>{try{return sessionStorage.getItem(SESS)==="1"}catch(e){return false}};
+function onAuth(u){
+  if(u&&u.isAnonymous&&!DEMO&&!sessOk()){store.logout();return}
+  S.user=u;S.admin=!!u&&!u.isAnonymous&&(DEMO||ADMIN_EMAILS.includes(u.email));
   const isAdminUser=S.admin, isMember=!!u&&!S.admin;
   $("#btnLogin").textContent=isAdminUser?"로그아웃":"관리자 로그인";$("#btnAdmin").hidden=!isAdminUser;$("#btnCode").hidden=!isAdminUser;$("#btnAll").hidden=!isAdminUser;
   if(u&&!u.isAnonymous&&!S.admin){toast("관리자 권한이 없는 계정입니다");store.logout();return}
@@ -602,8 +606,9 @@ $("#fGate").addEventListener("submit",async e=>{e.preventDefault();
   const code=$("#gCode").value.trim();if(!code)return;
   if(code.includes("/")){$("#gMsg").textContent="입장코드가 맞지 않습니다.";return}
   $("#gBtn").disabled=true;$("#gMsg").textContent="";
+  try{sessionStorage.setItem(SESS,"1")}catch(e){}
   try{await store.enter(code);S.wasIn=true;if(DEMO)onAuth({isAnonymous:true});else startListen()}
-  catch(err){$("#gMsg").textContent=err.code==="permission-denied"?"입장코드가 맞지 않습니다.":"입장하지 못했습니다. 잠시 후 다시 시도하세요. ("+(err.code||err.message)+")"}
+  catch(err){try{sessionStorage.removeItem(SESS)}catch(e){}$("#gMsg").textContent=err.code==="permission-denied"?"입장코드가 맞지 않습니다.":"입장하지 못했습니다. 잠시 후 다시 시도하세요. ("+(err.code||err.message)+")"}
   finally{$("#gBtn").disabled=false}});
 $("#gAdmin").onclick=()=>{$("#lgMsg").textContent=DEMO?"데모 모드: 아무 값이나 입력하면 관리자로 들어갑니다. (데모 입장코드: 1234)":"";open("#mLogin")};
 $("#btnCode").onclick=async()=>{$("#cdNow").textContent="불러오는 중…";$("#cdNew").value="";open("#mCode");
